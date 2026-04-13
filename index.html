@@ -5,881 +5,606 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ランダムウォーク ピクセルアート</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #2d3748;
-            min-height: 100vh;
-            padding: 20px;
-            color: #333;
+            background: #2d3748; min-height: 100vh; padding: 20px; color: #333;
         }
-        
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            max-width: 1200px; margin: 0 auto; background: white;
+            border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
         }
-        
-        h1 {
-            text-align: center;
-            color: #2d3748;
-            margin-bottom: 10px;
-            font-size: 32px;
-        }
-        
-        .subtitle {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 30px;
-        }
-        
-        .canvas-section {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
+        h1 { text-align: center; color: #2d3748; margin-bottom: 10px; font-size: 32px; }
+        .main-content { display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
+        .canvas-section { display: flex; flex-direction: column; align-items: center; }
         .canvas-wrapper {
-            background: #f5f5f5;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            background: #f5f5f5; padding: 20px; border-radius: 15px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;
         }
-        
         canvas {
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            border: 3px solid #333;
-            background: white;
-            display: block;
-            cursor: default;
+            image-rendering: pixelated; image-rendering: crisp-edges;
+            border: 3px solid #333; background: white; display: block; cursor: default;
         }
-        
-        canvas.drawing-mode {
-            cursor: crosshair;
-        }
-        
+        canvas.drawing-mode { cursor: crosshair; }
         .controls-section {
-            background: #f9f9f9;
-            padding: 25px;
-            border-radius: 15px;
-            border: 2px solid #e0e0e0;
+            background: #f9f9f9; padding: 25px; border-radius: 15px; border: 2px solid #e0e0e0;
         }
-        
-        .control-group {
-            margin-bottom: 25px;
+        .control-group { margin-bottom: 25px; }
+        .control-group:last-child { margin-bottom: 0; }
+        .control-group > label {
+            display: block; font-weight: bold; color: #333; margin-bottom: 8px; font-size: 14px;
         }
-        
-        .control-group:last-child {
-            margin-bottom: 0;
-        }
-        
-        .control-group label {
-            display: block;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
         .control-group input[type="range"] {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
-            background: #ddd;
-            outline: none;
-            -webkit-appearance: none;
+            width: 100%; height: 6px; border-radius: 3px; background: #ddd;
+            outline: none; -webkit-appearance: none;
         }
-        
         .control-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #4a5568;
-            cursor: pointer;
+            -webkit-appearance: none; appearance: none;
+            width: 18px; height: 18px; border-radius: 50%; background: #4a5568; cursor: pointer;
         }
-        
         .control-group input[type="range"]::-moz-range-thumb {
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background: #4a5568;
-            cursor: pointer;
-            border: none;
+            width: 18px; height: 18px; border-radius: 50%;
+            background: #4a5568; cursor: pointer; border: none;
         }
-        
         .value-display {
-            display: inline-block;
-            background: #4a5568;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: bold;
-            margin-left: 10px;
+            display: inline-block; background: #4a5568; color: white;
+            padding: 4px 12px; border-radius: 12px; font-size: 13px;
+            font-weight: bold; margin-left: 10px;
         }
-        
         select {
-            width: 100%;
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
+            width: 100%; padding: 10px; border: 2px solid #ddd;
+            border-radius: 8px; font-size: 14px; background: white; cursor: pointer;
         }
-        
-        select:focus {
-            outline: none;
-            border-color: #4a5568;
-        }
-        
-        .checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
-        
-        .checkbox-group label {
-            margin: 0;
-            font-weight: normal;
-            cursor: pointer;
-        }
-        
-        .button-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 20px;
-        }
-        
+        select:focus { outline: none; border-color: #4a5568; }
+        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+        .checkbox-group label { margin: 0; font-weight: normal; cursor: pointer; }
+        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
         button {
-            padding: 14px 20px;
-            font-size: 15px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-family: inherit;
+            padding: 14px 20px; font-size: 15px; font-weight: bold;
+            border: none; border-radius: 8px; cursor: pointer;
+            transition: all 0.2s; font-family: inherit;
         }
-        
-        .btn-primary {
-            background: #4a5568;
-            color: white;
-            grid-column: 1 / -1;
-        }
-        
-        .btn-primary:hover {
-            background: #2d3748;
-        }
-        
-        .btn-secondary {
-            background: #4a5568;
-            color: white;
-        }
-        
-        .btn-secondary:hover {
-            background: #2d3748;
-        }
-        
-        .btn-tertiary {
-            background: #4a5568;
-            color: white;
-        }
-        
-        .btn-tertiary:hover {
-            background: #2d3748;
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .info-box {
-            background: #edf2f7;
-            border-left: 4px solid #4a5568;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        
+        .btn-primary { background: #4a5568; color: white; grid-column: 1 / -1; }
+        .btn-primary:hover { background: #2d3748; }
+        .btn-secondary { background: #4a5568; color: white; }
+        .btn-secondary:hover { background: #2d3748; }
+        .btn-tertiary { background: #4a5568; color: white; }
+        .btn-tertiary:hover { background: #2d3748; }
+        .btn-fill { background: #4a5568; color: white; grid-column: 1 / -1; }
+        .btn-fill:hover { background: #2d3748; }
+        .btn-fill.active { background: #276749; box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); }
+        .btn-fill.active:hover { background: #1e4e38; }
+        button:active { transform: translateY(0); }
         .color-picker {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 10px;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
+            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
+            padding: 12px; background: white; border-radius: 8px; border: 2px solid #e0e0e0;
         }
-        
         .color-chip {
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: all 0.2s;
-            position: relative;
+            width: 36px; height: 36px; border-radius: 6px; cursor: pointer;
+            border: 3px solid transparent; transition: all 0.2s; position: relative;
         }
-        
-        .color-chip:hover {
-            transform: scale(1.1);
-            border-color: #4a5568;
-        }
-        
-        .color-chip.selected {
-            border-color: #2d3748;
-            box-shadow: 0 0 0 2px white, 0 0 0 4px #2d3748;
-        }
-        
+        .color-chip:hover { transform: scale(1.1); border-color: #4a5568; }
+        .color-chip.selected { border-color: #2d3748; box-shadow: 0 0 0 2px white, 0 0 0 4px #2d3748; }
         .color-chip.selected::after {
-            content: '✓';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
-            text-shadow: 0 0 3px rgba(0,0,0,0.5);
+            content: '✓'; position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); color: white; font-weight: bold;
+            font-size: 18px; text-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
-        
-        .stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 15px;
+        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .stat-item { background: white; padding: 10px; border-radius: 8px; text-align: center; border: 2px solid #e0e0e0; }
+        .stat-label { font-size: 11px; color: #666; margin-bottom: 5px; }
+        .stat-value { font-size: 18px; font-weight: bold; color: #4a5568; }
+        .fill-dir-row {
+            display: flex; gap: 8px; margin-top: 8px; align-items: center;
         }
-        
-        .stat-item {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
-            border: 2px solid #e0e0e0;
+        .fill-dir-row span { font-size: 13px; color: #555; }
+        .fill-dir-row label {
+            display: flex; align-items: center; gap: 4px;
+            padding: 5px 12px; border: 2px solid #ddd; border-radius: 8px;
+            background: white; font-size: 13px; cursor: pointer; transition: all 0.2s;
         }
-        
-        .stat-label {
-            font-size: 11px;
-            color: #666;
-            margin-bottom: 5px;
+        .fill-dir-row label:has(input:checked) {
+            border-color: #4a5568; background: #edf2f7; font-weight: bold;
         }
-        
-        .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            color: #4a5568;
-        }
-        
-        @media (max-width: 900px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 900px) { .main-content { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>ランダムウォーク ピクセルアート生成</h1>
-        
-        <div class="main-content">
-            <div class="canvas-section">
-                <div class="canvas-wrapper">
-                    <canvas id="canvas"></canvas>
-                </div>
-                
-                <div class="button-grid" style="width: 100%; max-width: 500px;">
-                    <button class="btn-primary" onclick="generateArt()">新規生成</button>
-                    <button class="btn-secondary" onclick="startAnimation()">アニメーション</button>
-                    <button class="btn-tertiary" onclick="downloadImage()">ダウンロード</button>
-                </div>
-                
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-label">総ステップ数</div>
-                        <div class="stat-value" id="stepCount">0</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-label">塗られたピクセル</div>
-                        <div class="stat-value" id="pixelCount">0</div>
-                    </div>
+<div class="container">
+    <h1>ランダムウォーク ピクセルアート生成</h1>
+    <div class="main-content">
+        <div class="canvas-section">
+            <div class="canvas-wrapper">
+                <canvas id="canvas"></canvas>
+            </div>
+            <div class="button-grid" style="width:100%;max-width:500px;">
+                <button class="btn-primary" onclick="generateArt()">新規生成</button>
+                <button class="btn-fill" id="fillBtn" onclick="toggleFillEnclosed()">囲まれた空白を塗る</button>
+                <button class="btn-tertiary" onclick="downloadImage()">ダウンロード</button>
+            </div>
+            <div style="width:100%;max-width:500px;margin-top:10px;">
+                <div class="fill-dir-row">
+                    <span>囲み判定：</span>
+                    <label><input type="radio" name="fillDir" value="4" checked> 4方位</label>
+                    <label><input type="radio" name="fillDir" value="3"> 3方位</label>
                 </div>
             </div>
-            
-            <div class="controls-section">
-                <h3 style="margin-bottom: 20px; color: #2d3748;">パラメータ設定</h3>
-                
-                <div class="control-group">
-                    <label>
-                        グリッドサイズ
-                        <span class="value-display" id="sizeDisplay">32x32</span>
-                    </label>
-                    <input type="range" id="gridSize" min="16" max="64" value="32" step="8">
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-label">総ステップ数</div>
+                    <div class="stat-value" id="stepCount">0</div>
                 </div>
-                
-                <div class="control-group">
-                    <label>
-                        ステップ数
-                        <span class="value-display" id="stepsDisplay">500</span>
-                    </label>
-                    <input type="range" id="steps" min="100" max="2000" value="500" step="100">
+                <div class="stat-item">
+                    <div class="stat-label">塗られたピクセル</div>
+                    <div class="stat-value" id="pixelCount">0</div>
                 </div>
-                
-                <div class="control-group">
-                    <label>
-                        ウォーカー数
-                        <span class="value-display" id="walkersDisplay">1</span>
-                    </label>
-                    <input type="range" id="walkers" min="1" max="5" value="1">
+            </div>
+        </div>
+
+        <div class="controls-section">
+            <h3 style="margin-bottom:20px;color:#2d3748;">パラメータ設定</h3>
+            <div class="control-group">
+                <label>グリッドサイズ <span class="value-display" id="sizeDisplay">32x32</span></label>
+                <input type="range" id="gridSize" min="16" max="64" value="32" step="8">
+            </div>
+            <div class="control-group">
+                <label>ステップ数 <span class="value-display" id="stepsDisplay">500</span></label>
+                <input type="range" id="steps" min="100" max="2000" value="500" step="100">
+            </div>
+            <div class="control-group">
+                <label>ウォーカー数 <span class="value-display" id="walkersDisplay">1</span></label>
+                <input type="range" id="walkers" min="1" max="5" value="1">
+            </div>
+            <div class="control-group">
+                <label>移動パターン</label>
+                <select id="movePattern">
+                    <option value="4dir">4方向（上下左右）</option>
+                    <option value="8dir">8方向（斜め含む）</option>
+                    <option value="random">完全ランダム</option>
+                    <option value="biased">バイアス付き</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>カラーモード</label>
+                <select id="colorMode">
+                    <option value="single">単色</option>
+                    <option value="gradient">グラデーション</option>
+                    <option value="rainbow">レインボー</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>カラーパレット</label>
+                <select id="palette">
+                    <option value="monochrome">モノクロ</option>
+                    <option value="earth">アース</option>
+                    <option value="ocean">オーシャン</option>
+                    <option value="forest">フォレスト</option>
+                    <option value="vintage">ヴィンテージ</option>
+                    <option value="pastel">パステル</option>
+                    <option value="sunset">サンセット</option>
+                    <option value="autumn">オータム</option>
+                    <option value="ice">アイス</option>
+                    <option value="rainbow">レインボー</option>
+                    <option value="fire">ファイア</option>
+                    <option value="lava">ラヴァ</option>
+                    <option value="vibrant">ビビッド</option>
+                    <option value="neon">ネオン</option>
+                    <option value="candy">キャンディ</option>
+                    <option value="cyberpunk">サイバーパンク</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>使用する色を選択</label>
+                <div class="color-picker" id="colorPicker"></div>
+            </div>
+            <div class="control-group">
+                <div class="checkbox-group">
+                    <input type="checkbox" id="avoidOverlap">
+                    <label for="avoidOverlap">重複を避ける</label>
                 </div>
-                
-                <div class="control-group">
-                    <label>移動パターン</label>
-                    <select id="movePattern">
-                        <option value="4dir">4方向（上下左右）</option>
-                        <option value="8dir">8方向（斜め含む）</option>
-                        <option value="random">完全ランダム</option>
-                        <option value="biased">バイアス付き</option>
-                    </select>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="showGrid">
+                    <label for="showGrid">グリッド表示</label>
                 </div>
-                
-                <div class="control-group">
-                    <label>カラーモード</label>
-                    <select id="colorMode">
-                        <option value="single">単色</option>
-                        <option value="gradient">グラデーション</option>
-                        <option value="rainbow">レインボー</option>
-                    </select>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="connectPath" checked>
+                    <label for="connectPath">パスを接続</label>
                 </div>
-                
-                <div class="control-group">
-                    <label>カラーパレット</label>
-                    <select id="palette">
-                        <option value="monochrome">モノクロ</option>
-                        <option value="earth">アース</option>
-                        <option value="ocean">オーシャン</option>
-                        <option value="forest">フォレスト</option>
-                        <option value="vintage">ヴィンテージ</option>
-                        <option value="pastel">パステル</option>
-                        <option value="sunset">サンセット</option>
-                        <option value="autumn">オータム</option>
-                        <option value="ice">アイス</option>
-                        <option value="rainbow">レインボー</option>
-                        <option value="fire">ファイア</option>
-                        <option value="lava">ラヴァ</option>
-                        <option value="vibrant">ビビッド</option>
-                        <option value="neon">ネオン</option>
-                        <option value="candy">キャンディ</option>
-                        <option value="cyberpunk">サイバーパンク</option>
-                    </select>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="manualDraw">
+                    <label for="manualDraw">手動描画モード</label>
                 </div>
-                
-                <div class="control-group">
-                    <label>使用する色を選択</label>
-                    <div class="color-picker" id="colorPicker"></div>
-                </div>
-                
-                <div class="control-group">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="avoidOverlap">
-                        <label for="avoidOverlap">重複を避ける</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="showGrid">
-                        <label for="showGrid">グリッド表示</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="connectPath" checked>
-                        <label for="connectPath">パスを接続</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="manualDraw">
-                        <label for="manualDraw">手動描画モード</label>
-                    </div>
-                </div>
-                
-                <div class="control-group" id="manualColorGroup" style="display: none;">
-                    <label>描画色</label>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div id="currentColorDisplay" style="width: 40px; height: 40px; border-radius: 8px; border: 3px solid #2d3748; background: #000000;"></div>
-                        <span id="currentColorLabel" style="font-weight: bold;">#000000</span>
-                    </div>
+            </div>
+            <div class="control-group" id="manualColorGroup" style="display:none;">
+                <label>描画色</label>
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div id="currentColorDisplay" style="width:40px;height:40px;border-radius:8px;border:3px solid #2d3748;background:#000000;"></div>
+                    <span id="currentColorLabel" style="font-weight:bold;">#000000</span>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        
-        let gridSize = 32;
-        let pixelScale = 15;
-        let currentPixelData = [];
-        let animationId = null;
-        let selectedColors = []; // 選択された色
-        let manualDrawMode = false;
-        let currentDrawColor = '#000000';
-        let isDrawing = false;
-        
-        const palettes = {
-            monochrome: ['#000000', '#404040', '#808080', '#BFBFBF', '#FFFFFF', 'transparent'],
-            vibrant: ['#FF006E', '#FB5607', '#FFBE0B', '#8338EC', '#3A86FF', '#FFFFFF', 'transparent'],
-            pastel: ['#FFB3BA', '#FFDFBA', '#FFFFBA', '#BAFFC9', '#BAE1FF', '#FFFFFF', 'transparent'],
-            neon: ['#FF006E', '#FB5607', '#FFBE0B', '#06FFA5', '#FF5AC4', '#FFFFFF', 'transparent'],
-            earth: ['#8B4513', '#D2691E', '#CD853F', '#DEB887', '#F5DEB3', '#FFFFFF', 'transparent'],
-            ocean: ['#001F3F', '#0074D9', '#7FDBFF', '#39CCCC', '#3D9970', '#FFFFFF', 'transparent'],
-            fire: ['#8B0000', '#DC143C', '#FF4500', '#FF8C00', '#FFD700', '#FFFFFF', 'transparent'],
-            sunset: ['#FF6B6B', '#FFA07A', '#FFD93D', '#FCB1D0', '#A8E6CF', '#FFFFFF', 'transparent'],
-            forest: ['#1B4332', '#2D6A4F', '#40916C', '#52B788', '#95D5B2', '#FFFFFF', 'transparent'],
-            candy: ['#FF1493', '#FF69B4', '#FFB6C1', '#DDA0DD', '#EE82EE', '#FFFFFF', 'transparent'],
-            vintage: ['#DEB887', '#BC8F8F', '#CD853F', '#D2B48C', '#F5DEB3', '#FFFFFF', 'transparent'],
-            cyberpunk: ['#FF00FF', '#00FFFF', '#FF0080', '#8000FF', '#00FF80', '#FFFFFF', 'transparent'],
-            autumn: ['#8B0000', '#FF4500', '#FFA500', '#DAA520', '#B8860B', '#FFFFFF', 'transparent'],
-            ice: ['#E0F2F7', '#B3E5FC', '#81D4FA', '#4FC3F7', '#29B6F6', '#FFFFFF', 'transparent'],
-            lava: ['#1A0000', '#4D0000', '#800000', '#B30000', '#FF0000', '#FFFFFF', 'transparent'],
-            rainbow: ['#FF0000', '#FF7F00', '#FFFF00', '#00FF00', '#0000FF', '#4B0082', '#8B00FF', '#FFFFFF', 'transparent']
-        };        
-        // UI更新
-        document.getElementById('gridSize').addEventListener('input', (e) => {
-            gridSize = parseInt(e.target.value);
-            document.getElementById('sizeDisplay').textContent = `${gridSize}x${gridSize}`;
-            updateCanvasSize();
-        });
-        
-        document.getElementById('steps').addEventListener('input', (e) => {
-            document.getElementById('stepsDisplay').textContent = e.target.value;
-        });
-        
-        document.getElementById('walkers').addEventListener('input', (e) => {
-            document.getElementById('walkersDisplay').textContent = e.target.value;
-        });
-        
-        document.getElementById('showGrid').addEventListener('change', () => {
-            drawPixels();
-        });
-        
-        document.getElementById('palette').addEventListener('change', () => {
-            updateColorPicker();
-        });
-        
-        document.getElementById('manualDraw').addEventListener('change', (e) => {
-            manualDrawMode = e.target.checked;
-            const manualColorGroup = document.getElementById('manualColorGroup');
-            
-            if (manualDrawMode) {
-                canvas.classList.add('drawing-mode');
-                manualColorGroup.style.display = 'block';
-                // 最初の選択色を描画色に設定
-                if (selectedColors.length > 0) {
-                    currentDrawColor = selectedColors[0];
-                    document.getElementById('currentColorDisplay').style.backgroundColor = currentDrawColor;
-                    document.getElementById('currentColorLabel').textContent = currentDrawColor;
-                }
-                // 全ての色チップの選択を解除して、最初の色だけ選択
-                document.querySelectorAll('.color-chip').forEach((chip, idx) => {
-                    chip.classList.remove('selected');
-                    if (idx === 0) chip.classList.add('selected');
-                });
-            } else {
-                canvas.classList.remove('drawing-mode');
-                manualColorGroup.style.display = 'none';
-                // 通常モードに戻る時は全色選択に戻す
-                document.querySelectorAll('.color-chip').forEach(chip => {
-                    chip.classList.add('selected');
-                });
-                updateSelectedColors();
-            }
-        });
-        
-        function updateColorPicker() {
-            const palette = document.getElementById('palette').value;
-            const colors = palettes[palette];
-            const colorPicker = document.getElementById('colorPicker');
-            
-            colorPicker.innerHTML = '';
-            selectedColors = [...colors]; // デフォルトで全色選択
-            
-            colors.forEach((color, index) => {
-                const chip = document.createElement('div');
-                chip.className = 'color-chip selected';
-                chip.style.backgroundColor = color;
-                chip.dataset.color = color;
-                chip.dataset.index = index;
-                
-                chip.addEventListener('click', () => {
-                    if (manualDrawMode) {
-                        // 手動描画モードでは描画色として設定
-                        currentDrawColor = color;
-                        document.getElementById('currentColorDisplay').style.backgroundColor = color;
-                        document.getElementById('currentColorLabel').textContent = color;
-                        
-                        // 全てのチップの選択を解除して、クリックされたものだけ選択
-                        document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
-                        chip.classList.add('selected');
-                    } else {
-                        // 通常モードでは選択のトグル
-                        chip.classList.toggle('selected');
-                        updateSelectedColors();
-                    }
-                });
-                
-                colorPicker.appendChild(chip);
-            });
-        }
-        
-        function updateSelectedColors() {
-            const palette = document.getElementById('palette').value;
-            const allColors = palettes[palette];
-            const chips = document.querySelectorAll('.color-chip');
-            
-            selectedColors = [];
-            
-            // パレットの順序を保ちながら選択された色を追加
-            allColors.forEach((color, index) => {
-                const chip = chips[index];
-                if (chip && chip.classList.contains('selected')) {
-                    selectedColors.push(color);
-                }
-            });
-            
-            // 最低1色は選択されている必要がある
-            if (selectedColors.length === 0) {
-                chips[0].classList.add('selected');
-                selectedColors.push(allColors[0]);
-            }
-        }
-        
-        function updateCanvasSize() {
-            canvas.width = gridSize * pixelScale;
-            canvas.height = gridSize * pixelScale;
-            generateArt();
-        }
-        
-        function generateArt() {
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-            }
-            
-            currentPixelData = Array(gridSize).fill().map(() => Array(gridSize).fill(null));
-            
-            const steps = parseInt(document.getElementById('steps').value);
-            const numWalkers = parseInt(document.getElementById('walkers').value);
-            const movePattern = document.getElementById('movePattern').value;
-            const colorMode = document.getElementById('colorMode').value;
-            const avoidOverlap = document.getElementById('avoidOverlap').checked;
-            const connectPath = document.getElementById('connectPath').checked;
-            
-            const colors = selectedColors; // 選択された色のみ使用
-            
-            for (let w = 0; w < numWalkers; w++) {
-                let x = Math.floor(gridSize / 2) + (w - Math.floor(numWalkers / 2)) * 2;
-                let y = Math.floor(gridSize / 2);
-                
-                for (let i = 0; i < steps; i++) {
-                    if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-                        if (!avoidOverlap || currentPixelData[y][x] === null) {
-                            currentPixelData[y][x] = getColor(colorMode, colors, i, steps, x, y);
-                        }
-                    }
-                    
-                    const [newX, newY] = getNextPosition(x, y, movePattern);
-                    
-                    if (connectPath) {
-                        // 線で接続
-                        const steps = Math.max(Math.abs(newX - x), Math.abs(newY - y));
-                        for (let s = 1; s <= steps; s++) {
-                            const interpX = Math.floor(x + (newX - x) * s / steps);
-                            const interpY = Math.floor(y + (newY - y) * s / steps);
-                            if (interpX >= 0 && interpX < gridSize && interpY >= 0 && interpY < gridSize) {
-                                if (!avoidOverlap || currentPixelData[interpY][interpX] === null) {
-                                    currentPixelData[interpY][interpX] = getColor(colorMode, colors, i, steps, interpX, interpY);
-                                }
-                            }
-                        }
-                    }
-                    
-                    x = newX;
-                    y = newY;
-                }
-            }
-            
-            updateStats();
-            drawPixels();
-        }
-        
-        function getNextPosition(x, y, pattern) {
-            let newX = x;
-            let newY = y;
-            
-            switch(pattern) {
-                case '4dir':
-                    const dir4 = Math.floor(Math.random() * 4);
-                    if (dir4 === 0) newY--;
-                    else if (dir4 === 1) newY++;
-                    else if (dir4 === 2) newX--;
-                    else newX++;
-                    break;
-                    
-                case '8dir':
-                    const dir8 = Math.floor(Math.random() * 8);
-                    const dx = [-1, 0, 1, -1, 1, -1, 0, 1][dir8];
-                    const dy = [-1, -1, -1, 0, 0, 1, 1, 1][dir8];
-                    newX += dx;
-                    newY += dy;
-                    break;
-                    
-                case 'random':
-                    newX += Math.floor(Math.random() * 7) - 3;
-                    newY += Math.floor(Math.random() * 7) - 3;
-                    break;
-                    
-                case 'biased':
-                    // 下方向と右方向にバイアス
-                    const rand = Math.random();
-                    if (rand < 0.3) newY++;
-                    else if (rand < 0.5) newX++;
-                    else if (rand < 0.7) newY--;
-                    else newX--;
-                    break;
-            }
-            
-            // 境界で折り返し
-            newX = Math.max(0, Math.min(gridSize - 1, newX));
-            newY = Math.max(0, Math.min(gridSize - 1, newY));
-            
-            return [newX, newY];
-        }
-        
-        function getColor(mode, colors, step, totalSteps, x, y) {
-            // 選択された色が1つもない場合のフォールバック
-            if (!colors || colors.length === 0) {
-                return '#000000';
-            }
-            
-            switch(mode) {
-                case 'single':
-                    return colors[0];
-                    
-                case 'gradient':
-                    // 選択された色数に応じて適切にグラデーション
-                    if (colors.length === 1) {
-                        return colors[0];
-                    }
-                    const progress = step / totalSteps;
-                    const scaledProgress = progress * (colors.length);
-                    const index = Math.floor(scaledProgress);
-                    const nextIndex = Math.min(index + 1, colors.length - 1);
-                    
-                    // 2色以上ある場合は線形補間
-                    if (index === nextIndex) {
-                        return colors[index];
-                    }
-                    
-                    const blend = scaledProgress - index;
-                    return colors[index]; // シンプルに最も近い色を使用
-                    
-                case 'rainbow':
-                    const hue = (step / totalSteps) * 360;
-                    return `hsl(${hue}, 70%, 60%)`;
-                    
-                default:
-                    return colors[0];
-            }
-        }
-        
-        function drawPixels() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // グリッド表示
-            if (document.getElementById('showGrid').checked) {
-                ctx.strokeStyle = '#e0e0e0';
-                ctx.lineWidth = 0.5;
-                for (let i = 0; i <= gridSize; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(i * pixelScale, 0);
-                    ctx.lineTo(i * pixelScale, canvas.height);
-                    ctx.stroke();
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(0, i * pixelScale);
-                    ctx.lineTo(canvas.width, i * pixelScale);
-                    ctx.stroke();
-                }
-            }
-            
-            // ピクセル描画
-            for (let y = 0; y < gridSize; y++) {
-                for (let x = 0; x < gridSize; x++) {
-                    if (currentPixelData[y][x] !== null) {
-                        ctx.fillStyle = currentPixelData[y][x];
-                        ctx.fillRect(x * pixelScale, y * pixelScale, pixelScale, pixelScale);
-                    }
-                }
-            }
-        }
-        
-        function startAnimation() {
-            const animButton = event.target;
-            
-            if (animationId) {
-                cancelAnimationFrame(animationId);
-                animationId = null;
-                animButton.textContent = '▶️ アニメーション';
-                animButton.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
-                return;
-            }
-            
-            animButton.textContent = '⏸️ 停止';
-            animButton.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%)';
-            
-            currentPixelData = Array(gridSize).fill().map(() => Array(gridSize).fill(null));
-            
-            const steps = parseInt(document.getElementById('steps').value);
-            const numWalkers = parseInt(document.getElementById('walkers').value);
-            const movePattern = document.getElementById('movePattern').value;
-            const colorMode = document.getElementById('colorMode').value;
-            const colors = selectedColors; // 選択された色のみ使用
-            
-            const walkerStates = Array(numWalkers).fill().map((_, w) => ({
-                x: Math.floor(gridSize / 2) + (w - Math.floor(numWalkers / 2)) * 2,
-                y: Math.floor(gridSize / 2),
-                step: 0
-            }));
-            
-            let frameCounter = 0;
-            const framesPerStep = 2; // アニメーション速度調整（大きいほど遅い）
-            
-            function animateStep() {
-                frameCounter++;
-                
-                // 数フレームに1回だけ進める
-                if (frameCounter % framesPerStep === 0) {
-                    let allDone = true;
-                    
-                    for (let walker of walkerStates) {
-                        if (walker.step < steps) {
-                            allDone = false;
-                            
-                            const x = walker.x;
-                            const y = walker.y;
-                            
-                            if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-                                currentPixelData[y][x] = getColor(colorMode, colors, walker.step, steps, x, y);
-                            }
-                            
-                            const [newX, newY] = getNextPosition(x, y, movePattern);
-                            walker.x = newX;
-                            walker.y = newY;
-                            walker.step++;
-                        }
-                    }
-                    
-                    drawPixels();
-                    updateStats();
-                    
-                    if (allDone) {
-                        animationId = null;
-                        animButton.textContent = '▶️ アニメーション';
-                        animButton.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
-                        return;
-                    }
-                }
-                
-                animationId = requestAnimationFrame(animateStep);
-            }
-            
-            animateStep();
-        }
-        
-        function updateStats() {
-            const steps = parseInt(document.getElementById('steps').value);
-            const numWalkers = parseInt(document.getElementById('walkers').value);
-            document.getElementById('stepCount').textContent = steps * numWalkers;
-            
-            let pixelCount = 0;
-            for (let y = 0; y < gridSize; y++) {
-                for (let x = 0; x < gridSize; x++) {
-                    if (currentPixelData[y][x] !== null) pixelCount++;
-                }
-            }
-            document.getElementById('pixelCount').textContent = pixelCount;
-        }
-        
-        function downloadImage() {
-            const link = document.createElement('a');
-            link.download = 'random-walk-art.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
-        
-        // 初期化
+<script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let gridSize = 32;
+    let pixelScale = 15;
+    let currentPixelData = [];
+    let selectedColors = [];
+    let manualDrawMode = false;
+    let currentDrawColor = '#000000';
+    let isDrawing = false;
+
+    // 囲み塗り状態
+    let fillActive = false;
+    let fillBackupData = null;
+
+    const palettes = {
+        monochrome: ['#000000','#404040','#808080','#BFBFBF','#FFFFFF','transparent'],
+        vibrant:    ['#FF006E','#FB5607','#FFBE0B','#8338EC','#3A86FF','#FFFFFF','transparent'],
+        pastel:     ['#FFB3BA','#FFDFBA','#FFFFBA','#BAFFC9','#BAE1FF','#FFFFFF','transparent'],
+        neon:       ['#FF006E','#FB5607','#FFBE0B','#06FFA5','#FF5AC4','#FFFFFF','transparent'],
+        earth:      ['#8B4513','#D2691E','#CD853F','#DEB887','#F5DEB3','#FFFFFF','transparent'],
+        ocean:      ['#001F3F','#0074D9','#7FDBFF','#39CCCC','#3D9970','#FFFFFF','transparent'],
+        fire:       ['#8B0000','#DC143C','#FF4500','#FF8C00','#FFD700','#FFFFFF','transparent'],
+        sunset:     ['#FF6B6B','#FFA07A','#FFD93D','#FCB1D0','#A8E6CF','#FFFFFF','transparent'],
+        forest:     ['#1B4332','#2D6A4F','#40916C','#52B788','#95D5B2','#FFFFFF','transparent'],
+        candy:      ['#FF1493','#FF69B4','#FFB6C1','#DDA0DD','#EE82EE','#FFFFFF','transparent'],
+        vintage:    ['#DEB887','#BC8F8F','#CD853F','#D2B48C','#F5DEB3','#FFFFFF','transparent'],
+        cyberpunk:  ['#FF00FF','#00FFFF','#FF0080','#8000FF','#00FF80','#FFFFFF','transparent'],
+        autumn:     ['#8B0000','#FF4500','#FFA500','#DAA520','#B8860B','#FFFFFF','transparent'],
+        ice:        ['#E0F2F7','#B3E5FC','#81D4FA','#4FC3F7','#29B6F6','#FFFFFF','transparent'],
+        lava:       ['#1A0000','#4D0000','#800000','#B30000','#FF0000','#FFFFFF','transparent'],
+        rainbow:    ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#4B0082','#8B00FF','#FFFFFF','transparent']
+    };
+
+    // イベントリスナー
+    document.getElementById('gridSize').addEventListener('input', (e) => {
+        gridSize = parseInt(e.target.value);
+        document.getElementById('sizeDisplay').textContent = `${gridSize}x${gridSize}`;
         updateCanvasSize();
-        updateColorPicker();
-        
-        // キャンバスにマウスイベントを追加
-        canvas.addEventListener('mousedown', handleCanvasMouseDown);
-        canvas.addEventListener('mousemove', handleCanvasMouseMove);
-        canvas.addEventListener('mouseup', handleCanvasMouseUp);
-        canvas.addEventListener('mouseleave', handleCanvasMouseUp);
-        
-        function handleCanvasMouseDown(e) {
-            if (!manualDrawMode) return;
-            isDrawing = true;
-            drawAtMouse(e);
+    });
+    document.getElementById('steps').addEventListener('input', (e) => {
+        document.getElementById('stepsDisplay').textContent = e.target.value;
+    });
+    document.getElementById('walkers').addEventListener('input', (e) => {
+        document.getElementById('walkersDisplay').textContent = e.target.value;
+    });
+    document.getElementById('showGrid').addEventListener('change', () => drawPixels());
+    document.getElementById('palette').addEventListener('change', () => updateColorPicker());
+    document.getElementById('manualDraw').addEventListener('change', (e) => {
+        manualDrawMode = e.target.checked;
+        const manualColorGroup = document.getElementById('manualColorGroup');
+        if (manualDrawMode) {
+            canvas.classList.add('drawing-mode');
+            manualColorGroup.style.display = 'block';
+            if (selectedColors.length > 0) {
+                currentDrawColor = selectedColors[0];
+                document.getElementById('currentColorDisplay').style.backgroundColor = currentDrawColor;
+                document.getElementById('currentColorLabel').textContent = currentDrawColor;
+            }
+            document.querySelectorAll('.color-chip').forEach((chip, idx) => {
+                chip.classList.remove('selected');
+                if (idx === 0) chip.classList.add('selected');
+            });
+        } else {
+            canvas.classList.remove('drawing-mode');
+            manualColorGroup.style.display = 'none';
+            document.querySelectorAll('.color-chip').forEach(chip => chip.classList.add('selected'));
+            updateSelectedColors();
         }
-        
-        function handleCanvasMouseMove(e) {
-            if (!manualDrawMode || !isDrawing) return;
-            drawAtMouse(e);
+    });
+
+    // 方向ラジオ変更時：アクティブなら再適用
+    document.querySelectorAll('input[name="fillDir"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            if (fillActive) {
+                currentPixelData = fillBackupData.map(row => [...row]);
+                applyFillEnclosed();
+            }
+        });
+    });
+
+    function updateColorPicker() {
+        const palette = document.getElementById('palette').value;
+        const colors = palettes[palette];
+        const colorPicker = document.getElementById('colorPicker');
+        colorPicker.innerHTML = '';
+        selectedColors = [];
+
+        colors.forEach((color) => {
+            const isSpecial = (color === '#FFFFFF' || color === 'transparent');
+            const chip = document.createElement('div');
+            chip.className = isSpecial ? 'color-chip' : 'color-chip selected';
+
+            if (color === 'transparent') {
+                chip.style.background = 'linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)';
+                chip.style.backgroundSize = '12px 12px';
+                chip.style.backgroundPosition = '0 0,0 6px,6px -6px,-6px 0';
+            } else {
+                chip.style.backgroundColor = color;
+            }
+            chip.dataset.color = color;
+            if (!isSpecial) selectedColors.push(color);
+
+            chip.addEventListener('click', () => {
+                if (manualDrawMode) {
+                    currentDrawColor = color;
+                    const disp = document.getElementById('currentColorDisplay');
+                    disp.style.backgroundColor = (color === 'transparent') ? 'rgba(0,0,0,0)' : color;
+                    document.getElementById('currentColorLabel').textContent = color;
+                    document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
+                    chip.classList.add('selected');
+                } else {
+                    chip.classList.toggle('selected');
+                    updateSelectedColors();
+                }
+            });
+            colorPicker.appendChild(chip);
+        });
+    }
+
+    function updateSelectedColors() {
+        const palette = document.getElementById('palette').value;
+        const allColors = palettes[palette];
+        const chips = document.querySelectorAll('.color-chip');
+        selectedColors = [];
+        allColors.forEach((color, index) => {
+            const chip = chips[index];
+            if (chip && chip.classList.contains('selected')) selectedColors.push(color);
+        });
+        if (selectedColors.length === 0) {
+            chips[0].classList.add('selected');
+            selectedColors.push(allColors[0]);
         }
-        
-        function handleCanvasMouseUp() {
-            isDrawing = false;
+    }
+
+    function updateCanvasSize() {
+        canvas.width = gridSize * pixelScale;
+        canvas.height = gridSize * pixelScale;
+        generateArt();
+    }
+
+    function generateArt() {
+        // 囲み塗りリセット
+        if (fillActive) {
+            fillActive = false;
+            fillBackupData = null;
+            document.getElementById('fillBtn').classList.remove('active');
+            document.getElementById('fillBtn').textContent = '囲まれた空白を塗る';
         }
-        
-        function drawAtMouse(e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = Math.floor((e.clientX - rect.left) / pixelScale);
-            const y = Math.floor((e.clientY - rect.top) / pixelScale);
-            
-            if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-                currentPixelData[y][x] = currentDrawColor;
+        currentPixelData = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
+
+        const steps = parseInt(document.getElementById('steps').value);
+        const numWalkers = parseInt(document.getElementById('walkers').value);
+        const movePattern = document.getElementById('movePattern').value;
+        const colorMode = document.getElementById('colorMode').value;
+        const avoidOverlap = document.getElementById('avoidOverlap').checked;
+        const connectPath = document.getElementById('connectPath').checked;
+        const colors = selectedColors;
+
+        for (let w = 0; w < numWalkers; w++) {
+            let x = Math.floor(gridSize / 2) + (w - Math.floor(numWalkers / 2)) * 2;
+            let y = Math.floor(gridSize / 2);
+            for (let i = 0; i < steps; i++) {
+                if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+                    if (!avoidOverlap || currentPixelData[y][x] === null) {
+                        currentPixelData[y][x] = getColor(colorMode, colors, i, steps, x, y);
+                    }
+                }
+                const [newX, newY] = getNextPosition(x, y, movePattern);
+                if (connectPath) {
+                    const pathSteps = Math.max(Math.abs(newX - x), Math.abs(newY - y));
+                    for (let s = 1; s <= pathSteps; s++) {
+                        const interpX = Math.floor(x + (newX - x) * s / pathSteps);
+                        const interpY = Math.floor(y + (newY - y) * s / pathSteps);
+                        if (interpX >= 0 && interpX < gridSize && interpY >= 0 && interpY < gridSize) {
+                            if (!avoidOverlap || currentPixelData[interpY][interpX] === null) {
+                                currentPixelData[interpY][interpX] = getColor(colorMode, colors, i, steps, interpX, interpY);
+                            }
+                        }
+                    }
+                }
+                x = newX; y = newY;
+            }
+        }
+        updateStats();
+        drawPixels();
+    }
+
+    function getNextPosition(x, y, pattern) {
+        let newX = x, newY = y;
+        switch(pattern) {
+            case '4dir': {
+                const d = Math.floor(Math.random() * 4);
+                if (d===0) newY--; else if (d===1) newY++; else if (d===2) newX--; else newX++;
+                break;
+            }
+            case '8dir': {
+                const d = Math.floor(Math.random() * 8);
+                newX += [-1,0,1,-1,1,-1,0,1][d];
+                newY += [-1,-1,-1,0,0,1,1,1][d];
+                break;
+            }
+            case 'random':
+                newX += Math.floor(Math.random() * 7) - 3;
+                newY += Math.floor(Math.random() * 7) - 3;
+                break;
+            case 'biased': {
+                const r = Math.random();
+                if (r<0.3) newY++; else if (r<0.5) newX++; else if (r<0.7) newY--; else newX--;
+                break;
+            }
+        }
+        newX = Math.max(0, Math.min(gridSize - 1, newX));
+        newY = Math.max(0, Math.min(gridSize - 1, newY));
+        return [newX, newY];
+    }
+
+    function getColor(mode, colors, step, totalSteps, x, y) {
+        if (!colors || colors.length === 0) return '#000000';
+        switch(mode) {
+            case 'single': return colors[0];
+            case 'gradient': {
+                if (colors.length === 1) return colors[0];
+                const idx = Math.floor((step / totalSteps) * colors.length);
+                return colors[Math.min(idx, colors.length - 1)];
+            }
+            case 'rainbow': return `hsl(${(step / totalSteps) * 360}, 70%, 60%)`;
+            default: return colors[0];
+        }
+    }
+
+    function drawPixels() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (document.getElementById('showGrid').checked) {
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 0.5;
+            for (let i = 0; i <= gridSize; i++) {
+                ctx.beginPath(); ctx.moveTo(i * pixelScale, 0); ctx.lineTo(i * pixelScale, canvas.height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i * pixelScale); ctx.lineTo(canvas.width, i * pixelScale); ctx.stroke();
+            }
+        }
+        for (let y = 0; y < gridSize; y++) {
+            for (let x = 0; x < gridSize; x++) {
+                const c = currentPixelData[y][x];
+                if (c !== null && c !== 'transparent') {
+                    ctx.fillStyle = c;
+                    ctx.fillRect(x * pixelScale, y * pixelScale, pixelScale, pixelScale);
+                }
+            }
+        }
+    }
+
+    // ===== 囲まれた空白を塗る =====
+    function toggleFillEnclosed() {
+        const btn = document.getElementById('fillBtn');
+        if (!fillActive) {
+            fillActive = true;
+            fillBackupData = currentPixelData.map(row => [...row]);
+            applyFillEnclosed();
+            btn.classList.add('active');
+            btn.textContent = '囲み塗りを解除する';
+        } else {
+            fillActive = false;
+            currentPixelData = fillBackupData.map(row => [...row]);
+            fillBackupData = null;
+            btn.classList.remove('active');
+            btn.textContent = '囲まれた空白を塗る';
+            drawPixels();
+            updateStats();
+        }
+    }
+
+    function applyFillEnclosed() {
+        const dirCount = parseInt(document.querySelector('input[name="fillDir"]:checked').value);
+        // 外部到達可能な空白をBFSで探す
+        // 4方位：上下左右、3方位：上・左・右（下を除く）
+        const dirs4 = [[0,-1],[0,1],[-1,0],[1,0]];
+        const dirs3 = [[0,-1],[-1,0],[1,0]]; // 下なし
+        const dirs = dirCount === 4 ? dirs4 : dirs3;
+
+        const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
+        const queue = [];
+
+        // 縁の空白をキューに
+        for (let x = 0; x < gridSize; x++) {
+            if (currentPixelData[0][x] === null && !visited[0][x]) { visited[0][x]=true; queue.push([x,0]); }
+            if (currentPixelData[gridSize-1][x] === null && !visited[gridSize-1][x]) { visited[gridSize-1][x]=true; queue.push([x,gridSize-1]); }
+        }
+        for (let y = 1; y < gridSize-1; y++) {
+            if (currentPixelData[y][0] === null && !visited[y][0]) { visited[y][0]=true; queue.push([0,y]); }
+            if (currentPixelData[y][gridSize-1] === null && !visited[y][gridSize-1]) { visited[y][gridSize-1]=true; queue.push([gridSize-1,y]); }
+        }
+
+        // BFS
+        let qi = 0;
+        while (qi < queue.length) {
+            const [cx, cy] = queue[qi++];
+            for (const [dx, dy] of dirs) {
+                const nx = cx + dx, ny = cy + dy;
+                if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize
+                    && !visited[ny][nx] && currentPixelData[ny][nx] === null) {
+                    visited[ny][nx] = true;
+                    queue.push([nx, ny]);
+                }
+            }
+        }
+
+        // 囲まれた空白 = visited=false && null → 隣接色で塗る
+        for (let y = 0; y < gridSize; y++) {
+            for (let x = 0; x < gridSize; x++) {
+                if (!visited[y][x] && currentPixelData[y][x] === null) {
+                    const fillColor = getAdjacentColor(x, y);
+                    if (fillColor) currentPixelData[y][x] = fillColor;
+                }
+            }
+        }
+
+        drawPixels();
+        updateStats();
+    }
+
+    function getAdjacentColor(x, y) {
+        // 4方位→8方位の順で隣接色を探す
+        const dirs = [[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]];
+        for (const [dx, dy] of dirs) {
+            const nx = x+dx, ny = y+dy;
+            if (nx>=0 && nx<gridSize && ny>=0 && ny<gridSize && currentPixelData[ny][nx] !== null) {
+                return currentPixelData[ny][nx];
+            }
+        }
+        return null;
+    }
+
+    // ===== 統計・ダウンロード =====
+    function updateStats() {
+        const steps = parseInt(document.getElementById('steps').value);
+        const numWalkers = parseInt(document.getElementById('walkers').value);
+        document.getElementById('stepCount').textContent = steps * numWalkers;
+        let pixelCount = 0;
+        for (let y = 0; y < gridSize; y++)
+            for (let x = 0; x < gridSize; x++)
+                if (currentPixelData[y][x] !== null) pixelCount++;
+        document.getElementById('pixelCount').textContent = pixelCount;
+    }
+
+    function downloadImage() {
+        const link = document.createElement('a');
+        link.download = 'random-walk-art.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    }
+
+    // 初期化
+    updateCanvasSize();
+    updateColorPicker();
+
+    canvas.addEventListener('mousedown', (e) => { if (!manualDrawMode) return; isDrawing = true; drawAtMouse(e); });
+    canvas.addEventListener('mousemove', (e) => { if (!manualDrawMode || !isDrawing) return; drawAtMouse(e); });
+    canvas.addEventListener('mouseup', () => isDrawing = false);
+    canvas.addEventListener('mouseleave', () => isDrawing = false);
+
+    function drawAtMouse(e) {
+        const rect = canvas.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left) / pixelScale);
+        const y = Math.floor((e.clientY - rect.top) / pixelScale);
+        if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+            currentPixelData[y][x] = currentDrawColor;
+            if (fillActive) {
+                // 手動描画中は囲み塗りのバックアップも更新してから再適用
+                fillBackupData = currentPixelData.map(row => [...row]);
+                applyFillEnclosed();
+            } else {
                 drawPixels();
                 updateStats();
             }
         }
-    </script>
+    }
+</script>
 </body>
 </html>
