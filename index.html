@@ -4,160 +4,540 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ランダムウォーク ピクセルアート</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #f0ede8;
+            --surface: #faf9f7;
+            --surface2: #f5f2ee;
+            --border: #e2ddd7;
+            --border2: #cdc8c1;
+            --ink: #1a1714;
+            --ink2: #6b635a;
+            --ink3: #9e968d;
+            --accent: #c17f3e;
+            --accent-light: #f5e8d4;
+            --accent-dark: #9a6228;
+            --green: #3a7c52;
+            --green-light: #d4ead9;
+            --red: #c0392b;
+            --red-light: #fde8e6;
+            --shadow: 0 1px 3px rgba(26,23,20,0.08), 0 4px 16px rgba(26,23,20,0.06);
+            --shadow-sm: 0 1px 2px rgba(26,23,20,0.06);
+            --radius: 10px;
+            --radius-sm: 6px;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #2d3748; min-height: 100vh; padding: 20px; color: #333;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            padding: 24px 16px;
+            color: var(--ink);
         }
-        .container {
-            max-width: 1200px; margin: 0 auto; background: white;
-            border-radius: 20px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 24px;
         }
-        h1 { text-align: center; color: #2d3748; margin-bottom: 10px; font-size: 32px; }
-        .main-content { display: grid; grid-template-columns: 1fr 400px; gap: 30px; }
-        .canvas-section { display: flex; flex-direction: column; align-items: center; }
-        .canvas-wrapper {
-            background: #f5f5f5; padding: 20px; border-radius: 15px;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px;
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--ink);
+            letter-spacing: -0.3px;
         }
+        .page-header p {
+            font-size: 13px;
+            color: var(--ink3);
+            margin-top: 4px;
+        }
+
+        .app-layout {
+            display: flex;
+            gap: 20px;
+            max-width: 1160px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        /* ===== CANVAS AREA ===== */
+        .canvas-area {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .canvas-frame {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            box-shadow: var(--shadow);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
         canvas {
-            image-rendering: pixelated; image-rendering: crisp-edges;
-            border: 3px solid #333; background: white; display: block; cursor: default;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            display: block;
+            border: 1px solid var(--border2);
+            border-radius: 4px;
+            cursor: default;
+            max-width: 100%;
         }
         canvas.drawing-mode { cursor: crosshair; }
-        .controls-section {
-            background: #f9f9f9; padding: 25px; border-radius: 15px; border: 2px solid #e0e0e0;
+
+        /* ===== ACTION BAR ===== */
+        .action-bar {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
         }
-        .control-group { margin-bottom: 25px; }
-        .control-group:last-child { margin-bottom: 0; }
-        .control-group > label {
-            display: block; font-weight: bold; color: #333; margin-bottom: 8px; font-size: 14px;
+
+        .action-row {
+            display: flex;
+            gap: 8px;
         }
-        .control-group input[type="range"] {
-            width: 100%; height: 6px; border-radius: 3px; background: #ddd;
-            outline: none; -webkit-appearance: none;
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 9px 16px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid transparent;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+            white-space: nowrap;
         }
-        .control-group input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none; appearance: none;
-            width: 18px; height: 18px; border-radius: 50%; background: #4a5568; cursor: pointer;
+        .btn:active { transform: translateY(1px); }
+
+        .btn-primary {
+            background: var(--ink);
+            color: #fff;
+            flex: 1;
         }
-        .control-group input[type="range"]::-moz-range-thumb {
-            width: 18px; height: 18px; border-radius: 50%;
-            background: #4a5568; cursor: pointer; border: none;
+        .btn-primary:hover { background: #2d2a26; }
+
+        .btn-outline {
+            background: var(--surface);
+            color: var(--ink);
+            border-color: var(--border2);
+            flex: 1;
         }
-        .value-display {
-            display: inline-block; background: #4a5568; color: white;
-            padding: 4px 12px; border-radius: 12px; font-size: 13px;
-            font-weight: bold; margin-left: 10px;
+        .btn-outline:hover { background: var(--surface2); border-color: var(--border2); }
+
+        .btn-fill {
+            background: var(--surface);
+            color: var(--ink);
+            border-color: var(--border2);
+            flex: 1;
         }
+        .btn-fill:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent-dark); }
+        .btn-fill.active {
+            background: var(--green-light);
+            color: var(--green);
+            border-color: var(--green);
+        }
+        .btn-fill.active:hover { background: #c3e3cb; }
+
+        .btn-undo {
+            background: var(--surface);
+            color: var(--ink2);
+            border-color: var(--border);
+            padding: 9px 12px;
+        }
+        .btn-undo:hover { background: var(--surface2); }
+        .btn-undo:disabled { opacity: 0.35; cursor: not-allowed; }
+
+        /* Fill direction selector */
+        .fill-options {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 8px 12px;
+        }
+        .fill-options-label {
+            font-size: 12px;
+            color: var(--ink3);
+            white-space: nowrap;
+        }
+        .fill-dir-btns { display: flex; gap: 4px; }
+        .fill-dir-btns label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: white;
+            color: var(--ink2);
+        }
+        .fill-dir-btns label:has(input:checked) {
+            background: var(--accent-light);
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            font-weight: 500;
+        }
+        .fill-dir-btns input { display: none; }
+
+        /* Stats */
+        .stats-row {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+        .stat-card {
+            flex: 1;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            text-align: center;
+        }
+        .stat-label { font-size: 11px; color: var(--ink3); margin-bottom: 2px; }
+        .stat-value { font-size: 20px; font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; font-family: 'DM Mono', monospace; }
+
+        /* ===== CONTROLS PANEL ===== */
+        .controls-panel {
+            width: 320px;
+            flex-shrink: 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .panel-header h2 {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-body {
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            overflow-y: auto;
+        }
+
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        .field-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--ink2);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .field-value {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            background: var(--accent-light);
+            color: var(--accent-dark);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            -webkit-appearance: none;
+            appearance: none;
+            background: var(--border2);
+            border-radius: 2px;
+            outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--ink);
+            cursor: pointer;
+            border: 2px solid white;
+            box-shadow: 0 0 0 1px var(--border2);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            background: var(--ink);
+            cursor: pointer;
+            border: 2px solid white;
+        }
+
         select {
-            width: 100%; padding: 10px; border: 2px solid #ddd;
-            border-radius: 8px; font-size: 14px; background: white; cursor: pointer;
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border2);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239e968d' d='M6 8L1 3h10z'/%3E%3C/svg%3E") no-repeat right 10px center;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+            color: var(--ink);
         }
-        select:focus { outline: none; border-color: #4a5568; }
-        .checkbox-group { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
-        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
-        .checkbox-group label { margin: 0; font-weight: normal; cursor: pointer; }
-        .button-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        button {
-            padding: 14px 20px; font-size: 15px; font-weight: bold;
-            border: none; border-radius: 8px; cursor: pointer;
-            transition: all 0.2s; font-family: inherit;
+        select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 0 -20px;
         }
-        .btn-primary { background: #4a5568; color: white; grid-column: 1 / -1; }
-        .btn-primary:hover { background: #2d3748; }
-        .btn-secondary { background: #4a5568; color: white; }
-        .btn-secondary:hover { background: #2d3748; }
-        .btn-tertiary { background: #4a5568; color: white; }
-        .btn-tertiary:hover { background: #2d3748; }
-        .btn-fill { background: #4a5568; color: white; grid-column: 1 / -1; }
-        .btn-fill:hover { background: #2d3748; }
-        .btn-fill.active { background: #276749; box-shadow: inset 0 2px 6px rgba(0,0,0,0.3); }
-        .btn-fill.active:hover { background: #1e4e38; }
-        button:active { transform: translateY(0); }
-        .color-picker {
-            display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;
-            padding: 12px; background: white; border-radius: 8px; border: 2px solid #e0e0e0;
+
+        /* Checkboxes */
+        .check-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        .check-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--ink2);
+            cursor: pointer;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: white;
+            transition: all 0.15s;
+        }
+        .check-label:hover { border-color: var(--border2); background: var(--surface2); }
+        .check-label input[type="checkbox"] {
+            width: 14px; height: 14px;
+            accent-color: var(--ink);
+            cursor: pointer;
+        }
+        .check-label:has(input:checked) {
+            background: var(--accent-light);
+            border-color: var(--accent);
+            color: var(--accent-dark);
+        }
+
+        /* Color picker */
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
         }
         .color-chip {
-            width: 36px; height: 36px; border-radius: 6px; cursor: pointer;
-            border: 3px solid transparent; transition: all 0.2s; position: relative;
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+            position: relative;
+            box-shadow: var(--shadow-sm);
         }
-        .color-chip:hover { transform: scale(1.1); border-color: #4a5568; }
-        .color-chip.selected { border-color: #2d3748; box-shadow: 0 0 0 2px white, 0 0 0 4px #2d3748; }
+        .color-chip:hover { transform: scale(1.1); border-color: var(--ink2); }
+        .color-chip.selected {
+            border-color: var(--ink);
+            box-shadow: 0 0 0 3px var(--accent-light), 0 0 0 4px var(--ink);
+        }
         .color-chip.selected::after {
-            content: '✓'; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%); color: white; font-weight: bold;
-            font-size: 18px; text-shadow: 0 0 3px rgba(0,0,0,0.5);
+            content: '✓';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%,-50%);
+            color: white; font-weight: bold; font-size: 14px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.6);
         }
-        .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .stat-item { background: white; padding: 10px; border-radius: 8px; text-align: center; border: 2px solid #e0e0e0; }
-        .stat-label { font-size: 11px; color: #666; margin-bottom: 5px; }
-        .stat-value { font-size: 18px; font-weight: bold; color: #4a5568; }
-        .fill-dir-row {
-            display: flex; gap: 8px; margin-top: 8px; align-items: center;
+
+        /* Background color picker */
+        .bg-color-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .fill-dir-row span { font-size: 13px; color: #555; }
-        .fill-dir-row label {
-            display: flex; align-items: center; gap: 4px;
-            padding: 5px 12px; border: 2px solid #ddd; border-radius: 8px;
-            background: white; font-size: 13px; cursor: pointer; transition: all 0.2s;
+        .bg-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            background: white;
+            color: var(--ink2);
+            transition: all 0.15s;
         }
-        .fill-dir-row label:has(input:checked) {
-            border-color: #4a5568; background: #edf2f7; font-weight: bold;
+        .bg-option.active {
+            background: var(--accent-light);
+            border-color: var(--accent);
+            color: var(--accent-dark);
+            font-weight: 500;
         }
-        @media (max-width: 900px) { .main-content { grid-template-columns: 1fr; } }
+        #bgColorInput {
+            width: 28px; height: 28px;
+            border: 1px solid var(--border2);
+            border-radius: 4px;
+            cursor: pointer;
+            padding: 2px;
+            background: white;
+        }
+
+        /* Manual draw color */
+        .draw-color-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+        .draw-color-swatch {
+            width: 32px; height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border2);
+        }
+        .draw-color-name {
+            font-family: 'DM Mono', monospace;
+            font-size: 12px;
+            color: var(--ink2);
+        }
+
+        /* Scrollbar */
+        .panel-body::-webkit-scrollbar { width: 4px; }
+        .panel-body::-webkit-scrollbar-track { background: transparent; }
+        .panel-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+        /* Responsive */
+        @media (max-width: 860px) {
+            .app-layout { flex-direction: column; align-items: stretch; }
+            .controls-panel { width: 100%; }
+            .canvas-area { align-items: stretch; }
+            .canvas-frame { justify-content: center; }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>ランダムウォーク ピクセルアート生成</h1>
-    <div class="main-content">
-        <div class="canvas-section">
-            <div class="canvas-wrapper">
-                <canvas id="canvas"></canvas>
+
+<div class="page-header">
+    <h1>ランダムウォーク ピクセルアート</h1>
+    <p>Random Walk Pixel Art Generator</p>
+</div>
+
+<div class="app-layout">
+
+    <!-- Canvas Area -->
+    <div class="canvas-area">
+        <div class="canvas-frame">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="action-bar">
+            <div class="action-row">
+                <button class="btn btn-primary" onclick="generateArt()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+                    新規生成
+                </button>
+                <button class="btn btn-undo" id="undoBtn" onclick="undoAction()" disabled title="元に戻す (Ctrl+Z)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
+                </button>
+                <button class="btn btn-undo" id="redoBtn" onclick="redoAction()" disabled title="やり直す (Ctrl+Y)">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
+                </button>
+                <button class="btn btn-outline" onclick="downloadImage()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    保存
+                </button>
             </div>
-            <div class="button-grid" style="width:100%;max-width:500px;">
-                <button class="btn-primary" onclick="generateArt()">新規生成</button>
-                <button class="btn-fill" id="fillBtn" onclick="toggleFillEnclosed()">囲まれた空白を塗る</button>
-                <button class="btn-tertiary" onclick="downloadImage()">ダウンロード</button>
+            <div class="action-row">
+                <button class="btn btn-fill" id="fillBtn" onclick="toggleFillEnclosed()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 11H5m14 0a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2m14 0V9a2 2 0 0 0-2-2M5 11V9a2 2 0 0 1 2-2m0 0V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M7 7h10"/></svg>
+                    囲まれた空白を塗る
+                </button>
             </div>
-            <div style="width:100%;max-width:500px;margin-top:10px;">
-                <div class="fill-dir-row">
-                    <span>囲み判定：</span>
-                    <label><input type="radio" name="fillDir" value="4" checked> 4方位</label>
-                    <label><input type="radio" name="fillDir" value="3"> 3方位</label>
+            <div class="fill-options">
+                <span class="fill-options-label">囲み判定：</span>
+                <div class="fill-dir-btns">
+                    <label><input type="radio" name="fillDir" value="4" checked>4方位</label>
+                    <label><input type="radio" name="fillDir" value="3">3方位</label>
                 </div>
             </div>
-            <div class="stats">
-                <div class="stat-item">
+            <div class="stats-row">
+                <div class="stat-card">
                     <div class="stat-label">総ステップ数</div>
                     <div class="stat-value" id="stepCount">0</div>
                 </div>
-                <div class="stat-item">
+                <div class="stat-card">
                     <div class="stat-label">塗られたピクセル</div>
                     <div class="stat-value" id="pixelCount">0</div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <div class="controls-section">
-            <h3 style="margin-bottom:20px;color:#2d3748;">パラメータ設定</h3>
-            <div class="control-group">
-                <label>グリッドサイズ <span class="value-display" id="sizeDisplay">32x32</span></label>
-                <input type="range" id="gridSize" min="16" max="64" value="32" step="8">
+    <!-- Controls Panel -->
+    <div class="controls-panel">
+        <div class="panel-header">
+            <h2>パラメータ設定</h2>
+        </div>
+        <div class="panel-body">
+
+            <div class="field">
+                <div class="field-label">
+                    グリッドサイズ
+                    <span class="field-value" id="sizeDisplay">32×32</span>
+                </div>
+                <input type="range" id="gridSize" min="16" max="128" value="32" step="8">
             </div>
-            <div class="control-group">
-                <label>ステップ数 <span class="value-display" id="stepsDisplay">500</span></label>
+
+            <div class="field">
+                <div class="field-label">
+                    ステップ数
+                    <span class="field-value" id="stepsDisplay">500</span>
+                </div>
                 <input type="range" id="steps" min="100" max="2000" value="500" step="100">
             </div>
-            <div class="control-group">
-                <label>ウォーカー数 <span class="value-display" id="walkersDisplay">1</span></label>
-                <input type="range" id="walkers" min="1" max="5" value="1">
+
+            <div class="field">
+                <div class="field-label">
+                    ウォーカー数
+                    <span class="field-value" id="walkersDisplay">1</span>
+                </div>
+                <input type="range" id="walkers" min="1" max="10" value="1">
             </div>
-            <div class="control-group">
-                <label>移動パターン</label>
+
+            <div class="divider"></div>
+
+            <div class="field">
+                <div class="field-label">移動パターン</div>
                 <select id="movePattern">
                     <option value="4dir">4方向（上下左右）</option>
                     <option value="8dir">8方向（斜め含む）</option>
@@ -165,16 +545,18 @@
                     <option value="biased">バイアス付き</option>
                 </select>
             </div>
-            <div class="control-group">
-                <label>カラーモード</label>
+
+            <div class="field">
+                <div class="field-label">カラーモード</div>
                 <select id="colorMode">
                     <option value="single">単色</option>
                     <option value="gradient">グラデーション</option>
                     <option value="rainbow">レインボー</option>
                 </select>
             </div>
-            <div class="control-group">
-                <label>カラーパレット</label>
+
+            <div class="field">
+                <div class="field-label">カラーパレット</div>
                 <select id="palette">
                     <option value="monochrome">モノクロ</option>
                     <option value="earth">アース</option>
@@ -194,35 +576,47 @@
                     <option value="cyberpunk">サイバーパンク</option>
                 </select>
             </div>
-            <div class="control-group">
-                <label>使用する色を選択</label>
-                <div class="color-picker" id="colorPicker"></div>
+
+            <div class="field">
+                <div class="field-label">使用する色</div>
+                <div class="color-palette" id="colorPicker"></div>
             </div>
-            <div class="control-group">
-                <div class="checkbox-group">
-                    <input type="checkbox" id="avoidOverlap">
-                    <label for="avoidOverlap">重複を避ける</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="showGrid">
-                    <label for="showGrid">グリッド表示</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="connectPath" checked>
-                    <label for="connectPath">パスを接続</label>
-                </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="manualDraw">
-                    <label for="manualDraw">手動描画モード</label>
+
+            <div class="divider"></div>
+
+            <div class="field">
+                <div class="field-label">背景色</div>
+                <div class="bg-color-row">
+                    <button class="bg-option active" id="bgTransparent" onclick="setBgMode('transparent')">
+                        透過
+                    </button>
+                    <button class="bg-option" id="bgColor" onclick="setBgMode('color')">
+                        カラー
+                    </button>
+                    <input type="color" id="bgColorInput" value="#ffffff" title="背景色を選択">
                 </div>
             </div>
-            <div class="control-group" id="manualColorGroup" style="display:none;">
-                <label>描画色</label>
-                <div style="display:flex;align-items:center;gap:10px;">
-                    <div id="currentColorDisplay" style="width:40px;height:40px;border-radius:8px;border:3px solid #2d3748;background:#000000;"></div>
-                    <span id="currentColorLabel" style="font-weight:bold;">#000000</span>
+
+            <div class="divider"></div>
+
+            <div class="field">
+                <div class="field-label">オプション</div>
+                <div class="check-grid">
+                    <label class="check-label"><input type="checkbox" id="avoidOverlap">重複を避ける</label>
+                    <label class="check-label"><input type="checkbox" id="showGrid">グリッド表示</label>
+                    <label class="check-label"><input type="checkbox" id="connectPath" checked>パスを接続</label>
+                    <label class="check-label"><input type="checkbox" id="manualDraw">手動描画</label>
                 </div>
             </div>
+
+            <div id="manualColorGroup" style="display:none;">
+                <div class="field-label" style="margin-bottom:6px;">描画色</div>
+                <div class="draw-color-display">
+                    <div class="draw-color-swatch" id="currentColorDisplay"></div>
+                    <span class="draw-color-name" id="currentColorLabel">#000000</span>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -243,6 +637,14 @@
     let fillActive = false;
     let fillBackupData = null;
 
+    // Undo/Redo stacks
+    const undoStack = [];
+    const redoStack = [];
+    const MAX_UNDO = 30;
+
+    // Background mode
+    let bgMode = 'transparent'; // 'transparent' | 'color'
+
     const palettes = {
         monochrome: ['#000000','#404040','#808080','#BFBFBF','#FFFFFF','transparent'],
         vibrant:    ['#FF006E','#FB5607','#FFBE0B','#8338EC','#3A86FF','#FFFFFF','transparent'],
@@ -262,10 +664,75 @@
         rainbow:    ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#4B0082','#8B00FF','#FFFFFF','transparent']
     };
 
-    // イベントリスナー
+    // ===== UNDO / REDO =====
+    const FILL_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 11H5m14 0a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2m14 0V9a2 2 0 0 0-2-2M5 11V9a2 2 0 0 1 2-2m0 0V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M7 7h10"/></svg>`;
+
+    function updateHistoryBtns() {
+        document.getElementById('undoBtn').disabled = undoStack.length === 0;
+        document.getElementById('redoBtn').disabled = redoStack.length === 0;
+    }
+
+    function pushUndo() {
+        undoStack.push(currentPixelData.map(row => [...row]));
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+        redoStack.length = 0; // 新操作でredoをクリア
+        updateHistoryBtns();
+    }
+
+    function cancelFillUI() {
+        if (!fillActive) return;
+        fillActive = false;
+        fillBackupData = null;
+        const btn = document.getElementById('fillBtn');
+        btn.classList.remove('active');
+        btn.innerHTML = FILL_SVG + '囲まれた空白を塗る';
+    }
+
+    function undoAction() {
+        if (undoStack.length === 0) return;
+        cancelFillUI();
+        redoStack.push(currentPixelData.map(row => [...row]));
+        currentPixelData = undoStack.pop();
+        drawPixels();
+        updateStats();
+        updateHistoryBtns();
+    }
+
+    function redoAction() {
+        if (redoStack.length === 0) return;
+        cancelFillUI();
+        undoStack.push(currentPixelData.map(row => [...row]));
+        currentPixelData = redoStack.pop();
+        drawPixels();
+        updateStats();
+        updateHistoryBtns();
+    }
+
+    // Ctrl+Z / Ctrl+Y / Ctrl+Shift+Z
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+            e.preventDefault(); undoAction();
+        } else if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+            e.preventDefault(); redoAction();
+        }
+    });
+
+    // ===== BACKGROUND =====
+    function setBgMode(mode) {
+        bgMode = mode;
+        document.getElementById('bgTransparent').classList.toggle('active', mode === 'transparent');
+        document.getElementById('bgColor').classList.toggle('active', mode === 'color');
+        drawPixels();
+    }
+
+    document.getElementById('bgColorInput').addEventListener('input', () => {
+        if (bgMode === 'color') drawPixels();
+    });
+
+    // ===== EVENTS =====
     document.getElementById('gridSize').addEventListener('input', (e) => {
         gridSize = parseInt(e.target.value);
-        document.getElementById('sizeDisplay').textContent = `${gridSize}x${gridSize}`;
+        document.getElementById('sizeDisplay').textContent = `${gridSize}×${gridSize}`;
         updateCanvasSize();
     });
     document.getElementById('steps').addEventListener('input', (e) => {
@@ -284,8 +751,7 @@
             manualColorGroup.style.display = 'block';
             if (selectedColors.length > 0) {
                 currentDrawColor = selectedColors[0];
-                document.getElementById('currentColorDisplay').style.backgroundColor = currentDrawColor;
-                document.getElementById('currentColorLabel').textContent = currentDrawColor;
+                updateDrawColorDisplay();
             }
             document.querySelectorAll('.color-chip').forEach((chip, idx) => {
                 chip.classList.remove('selected');
@@ -299,7 +765,6 @@
         }
     });
 
-    // 方向ラジオ変更時：アクティブなら再適用
     document.querySelectorAll('input[name="fillDir"]').forEach(radio => {
         radio.addEventListener('change', () => {
             if (fillActive) {
@@ -309,6 +774,19 @@
         });
     });
 
+    function updateDrawColorDisplay() {
+        const disp = document.getElementById('currentColorDisplay');
+        if (currentDrawColor === 'transparent') {
+            disp.style.background = 'linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)';
+            disp.style.backgroundSize = '10px 10px';
+            disp.style.backgroundPosition = '0 0,0 5px,5px -5px,-5px 0';
+        } else {
+            disp.style.background = currentDrawColor;
+        }
+        document.getElementById('currentColorLabel').textContent = currentDrawColor;
+    }
+
+    // ===== COLOR PICKER =====
     function updateColorPicker() {
         const palette = document.getElementById('palette').value;
         const colors = palettes[palette];
@@ -323,8 +801,8 @@
 
             if (color === 'transparent') {
                 chip.style.background = 'linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)';
-                chip.style.backgroundSize = '12px 12px';
-                chip.style.backgroundPosition = '0 0,0 6px,6px -6px,-6px 0';
+                chip.style.backgroundSize = '10px 10px';
+                chip.style.backgroundPosition = '0 0,0 5px,5px -5px,-5px 0';
             } else {
                 chip.style.backgroundColor = color;
             }
@@ -334,9 +812,7 @@
             chip.addEventListener('click', () => {
                 if (manualDrawMode) {
                     currentDrawColor = color;
-                    const disp = document.getElementById('currentColorDisplay');
-                    disp.style.backgroundColor = (color === 'transparent') ? 'rgba(0,0,0,0)' : color;
-                    document.getElementById('currentColorLabel').textContent = color;
+                    updateDrawColorDisplay();
                     document.querySelectorAll('.color-chip').forEach(c => c.classList.remove('selected'));
                     chip.classList.add('selected');
                 } else {
@@ -363,19 +839,23 @@
         }
     }
 
+    // ===== CANVAS =====
     function updateCanvasSize() {
+        // Compute pixelScale to fit nicely
+        const maxPx = Math.min(window.innerWidth * 0.55, 560);
+        pixelScale = Math.max(6, Math.floor(maxPx / gridSize));
         canvas.width = gridSize * pixelScale;
         canvas.height = gridSize * pixelScale;
         generateArt();
     }
 
     function generateArt() {
-        // 囲み塗りリセット
+        pushUndo();
         if (fillActive) {
             fillActive = false;
             fillBackupData = null;
             document.getElementById('fillBtn').classList.remove('active');
-            document.getElementById('fillBtn').textContent = '囲まれた空白を塗る';
+            document.getElementById('fillBtn').innerHTML = FILL_SVG + '囲まれた空白を塗る';
         }
         currentPixelData = Array(gridSize).fill(null).map(() => Array(gridSize).fill(null));
 
@@ -461,8 +941,15 @@
 
     function drawPixels() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Background
+        if (bgMode === 'color') {
+            ctx.fillStyle = document.getElementById('bgColorInput').value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
         if (document.getElementById('showGrid').checked) {
-            ctx.strokeStyle = '#e0e0e0';
+            ctx.strokeStyle = 'rgba(0,0,0,0.08)';
             ctx.lineWidth = 0.5;
             for (let i = 0; i <= gridSize; i++) {
                 ctx.beginPath(); ctx.moveTo(i * pixelScale, 0); ctx.lineTo(i * pixelScale, canvas.height); ctx.stroke();
@@ -481,20 +968,35 @@
     }
 
     // ===== 囲まれた空白を塗る =====
+    // 3方位（コの字型）バグ修正:
+    // BFSでは「外部から到達できる空白」を求める。
+    // 3方位モードの意図は「上・左・右の3方向が塗られていたら囲まれている」こと。
+    // つまり外部からの伝播は「下方向からしか逃げられない」ようにする必要はない。
+    // 正しい解釈：任意の方向でBFSを行い、境界の縁セルへのアクセス経路として
+    // 「下（南）から外部に抜けられる」ルートを塞ぐ = 境界初期化を上縁・左縁・右縁のみとし、
+    // BFS伝播は全4方向で行う。これにより「上・左・右から囲まれ、下が開いている」場合は塗られない。
+    // 【正しい仕様】「コの字型（上・左・右を壁で囲まれた形）の内側を塗る」
+    // = 下の縁から逃げられないセルを塗る
+    // つまり：BFSの開始点を「下縁の空白セル + 左縁と右縁の空白セル」のみにし、
+    // 伝播は4方向全部で行えばよい。
+    //
+    // まとめ: 4方位 → 全4縁を開始点。3方位（コの字）→ 下縁のみを開始点、伝播は4方向。
+
     function toggleFillEnclosed() {
         const btn = document.getElementById('fillBtn');
         if (!fillActive) {
+            pushUndo();
             fillActive = true;
             fillBackupData = currentPixelData.map(row => [...row]);
             applyFillEnclosed();
             btn.classList.add('active');
-            btn.textContent = '囲み塗りを解除する';
+            btn.innerHTML = FILL_SVG + '囲み塗りを解除する';
         } else {
             fillActive = false;
             currentPixelData = fillBackupData.map(row => [...row]);
             fillBackupData = null;
             btn.classList.remove('active');
-            btn.textContent = '囲まれた空白を塗る';
+            btn.innerHTML = FILL_SVG + '囲まれた空白を塗る';
             drawPixels();
             updateStats();
         }
@@ -502,45 +1004,62 @@
 
     function applyFillEnclosed() {
         const dirCount = parseInt(document.querySelector('input[name="fillDir"]:checked').value);
-        // 外部到達可能な空白をBFSで探す
-        // 4方位：上下左右、3方位：上・左・右（下を除く）
         const dirs4 = [[0,-1],[0,1],[-1,0],[1,0]];
-        const dirs3 = [[0,-1],[-1,0],[1,0]]; // 下なし
-        const dirs = dirCount === 4 ? dirs4 : dirs3;
 
-        const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
-        const queue = [];
-
-        // 縁の空白をキューに
-        for (let x = 0; x < gridSize; x++) {
-            if (currentPixelData[0][x] === null && !visited[0][x]) { visited[0][x]=true; queue.push([x,0]); }
-            if (currentPixelData[gridSize-1][x] === null && !visited[gridSize-1][x]) { visited[gridSize-1][x]=true; queue.push([x,gridSize-1]); }
-        }
-        for (let y = 1; y < gridSize-1; y++) {
-            if (currentPixelData[y][0] === null && !visited[y][0]) { visited[y][0]=true; queue.push([0,y]); }
-            if (currentPixelData[y][gridSize-1] === null && !visited[y][gridSize-1]) { visited[y][gridSize-1]=true; queue.push([gridSize-1,y]); }
-        }
-
-        // BFS
-        let qi = 0;
-        while (qi < queue.length) {
-            const [cx, cy] = queue[qi++];
-            for (const [dx, dy] of dirs) {
-                const nx = cx + dx, ny = cy + dy;
-                if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize
-                    && !visited[ny][nx] && currentPixelData[ny][nx] === null) {
-                    visited[ny][nx] = true;
-                    queue.push([nx, ny]);
+        if (dirCount === 4) {
+            // 4方位モード：全縁の空白からBFSで「外部到達可能」を求め、残りを塗る
+            const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
+            const queue = [];
+            for (let x = 0; x < gridSize; x++) {
+                if (currentPixelData[0][x] === null && !visited[0][x]) { visited[0][x]=true; queue.push([x,0]); }
+                if (currentPixelData[gridSize-1][x] === null && !visited[gridSize-1][x]) { visited[gridSize-1][x]=true; queue.push([x,gridSize-1]); }
+            }
+            for (let y = 1; y < gridSize-1; y++) {
+                if (currentPixelData[y][0] === null && !visited[y][0]) { visited[y][0]=true; queue.push([0,y]); }
+                if (currentPixelData[y][gridSize-1] === null && !visited[y][gridSize-1]) { visited[y][gridSize-1]=true; queue.push([gridSize-1,y]); }
+            }
+            let qi = 0;
+            while (qi < queue.length) {
+                const [cx, cy] = queue[qi++];
+                for (const [dx, dy] of dirs4) {
+                    const nx = cx + dx, ny = cy + dy;
+                    if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize
+                        && !visited[ny][nx] && currentPixelData[ny][nx] === null) {
+                        visited[ny][nx] = true;
+                        queue.push([nx, ny]);
+                    }
                 }
             }
-        }
-
-        // 囲まれた空白 = visited=false && null → 隣接色で塗る
-        for (let y = 0; y < gridSize; y++) {
-            for (let x = 0; x < gridSize; x++) {
-                if (!visited[y][x] && currentPixelData[y][x] === null) {
-                    const fillColor = getAdjacentColor(x, y);
-                    if (fillColor) currentPixelData[y][x] = fillColor;
+            for (let y = 0; y < gridSize; y++)
+                for (let x = 0; x < gridSize; x++)
+                    if (!visited[y][x] && currentPixelData[y][x] === null) {
+                        const c = getAdjacentColor(x, y);
+                        if (c) currentPixelData[y][x] = c;
+                    }
+        } else {
+            // 3方位モード：上下左右の隣接4セルのうち3つ以上が塗られていたら塗る
+            // 変化がなくなるまで繰り返す（連鎖的に埋まるケースに対応）
+            let changed = true;
+            while (changed) {
+                changed = false;
+                for (let y = 0; y < gridSize; y++) {
+                    for (let x = 0; x < gridSize; x++) {
+                        if (currentPixelData[y][x] !== null) continue;
+                        let filledNeighbors = 0;
+                        for (const [dx, dy] of dirs4) {
+                            const nx = x + dx, ny = y + dy;
+                            // グリッド外は「壁あり」として数える
+                            if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) {
+                                filledNeighbors++;
+                            } else if (currentPixelData[ny][nx] !== null) {
+                                filledNeighbors++;
+                            }
+                        }
+                        if (filledNeighbors >= 3) {
+                            const c = getAdjacentColor(x, y);
+                            if (c) { currentPixelData[y][x] = c; changed = true; }
+                        }
+                    }
                 }
             }
         }
@@ -550,40 +1069,38 @@
     }
 
     function getAdjacentColor(x, y) {
-        // 4方位→8方位の順で隣接色を探す
         const dirs = [[0,-1],[0,1],[-1,0],[1,0],[-1,-1],[1,-1],[-1,1],[1,1]];
         for (const [dx, dy] of dirs) {
             const nx = x+dx, ny = y+dy;
-            if (nx>=0 && nx<gridSize && ny>=0 && ny<gridSize && currentPixelData[ny][nx] !== null) {
+            if (nx>=0 && nx<gridSize && ny>=0 && ny<gridSize
+                && currentPixelData[ny][nx] !== null && currentPixelData[ny][nx] !== 'transparent') {
                 return currentPixelData[ny][nx];
             }
         }
         return null;
     }
 
-    // ===== 統計・ダウンロード =====
+    // ===== STATS & DOWNLOAD =====
     function updateStats() {
         const steps = parseInt(document.getElementById('steps').value);
         const numWalkers = parseInt(document.getElementById('walkers').value);
-        document.getElementById('stepCount').textContent = steps * numWalkers;
+        document.getElementById('stepCount').textContent = (steps * numWalkers).toLocaleString();
         let pixelCount = 0;
         for (let y = 0; y < gridSize; y++)
             for (let x = 0; x < gridSize; x++)
                 if (currentPixelData[y][x] !== null) pixelCount++;
-        document.getElementById('pixelCount').textContent = pixelCount;
+        document.getElementById('pixelCount').textContent = pixelCount.toLocaleString();
     }
 
     function downloadImage() {
+        // If background is transparent, export as-is; else include bg
         const link = document.createElement('a');
-        link.download = 'random-walk-art.png';
-        link.href = canvas.toDataURL();
+        link.download = 'pixel-art.png';
+        link.href = canvas.toDataURL('image/png');
         link.click();
     }
 
-    // 初期化
-    updateCanvasSize();
-    updateColorPicker();
-
+    // ===== MOUSE DRAWING =====
     canvas.addEventListener('mousedown', (e) => { if (!manualDrawMode) return; isDrawing = true; drawAtMouse(e); });
     canvas.addEventListener('mousemove', (e) => { if (!manualDrawMode || !isDrawing) return; drawAtMouse(e); });
     canvas.addEventListener('mouseup', () => isDrawing = false);
@@ -591,12 +1108,15 @@
 
     function drawAtMouse(e) {
         const rect = canvas.getBoundingClientRect();
-        const x = Math.floor((e.clientX - rect.left) / pixelScale);
-        const y = Math.floor((e.clientY - rect.top) / pixelScale);
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const x = Math.floor((e.clientX - rect.left) * scaleX / pixelScale);
+        const y = Math.floor((e.clientY - rect.top) * scaleY / pixelScale);
         if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
+            if (currentPixelData[y][x] === currentDrawColor) return;
+            if (!isDrawing || e.type === 'mousedown') pushUndo();
             currentPixelData[y][x] = currentDrawColor;
             if (fillActive) {
-                // 手動描画中は囲み塗りのバックアップも更新してから再適用
                 fillBackupData = currentPixelData.map(row => [...row]);
                 applyFillEnclosed();
             } else {
@@ -605,6 +1125,10 @@
             }
         }
     }
+
+    // ===== INIT =====
+    updateCanvasSize();
+    updateColorPicker();
 </script>
 </body>
 </html>
