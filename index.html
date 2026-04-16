@@ -431,6 +431,37 @@
             color: var(--ink2);
         }
 
+        /* Custom palette add row */
+        .custom-color-add-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .custom-color-add-row input[type="color"] {
+            width: 40px; height: 36px;
+            border: 1px solid var(--border2);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            padding: 2px;
+            background: white;
+            flex-shrink: 0;
+        }
+        .color-chip-remove {
+            position: absolute;
+            top: -5px; right: -5px;
+            width: 16px; height: 16px;
+            background: var(--ink);
+            color: white;
+            border-radius: 50%;
+            font-size: 10px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .color-chip:hover .color-chip-remove { display: flex; }
+
         /* Scrollbar */
         .panel-body::-webkit-scrollbar { width: 4px; }
         .panel-body::-webkit-scrollbar-track { background: transparent; }
@@ -490,6 +521,18 @@
                     <label><input type="radio" name="fillDir" value="3">3方位</label>
                 </div>
             </div>
+            <div class="fill-options" style="gap:10px;flex-wrap:wrap;">
+                <span class="fill-options-label" style="white-space:nowrap;">面積フィル：</span>
+                <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2);">
+                    <input type="checkbox" id="areaFillEnabled" style="accent-color:var(--ink);cursor:pointer;width:14px;height:14px;">
+                    有効
+                </label>
+                <div style="display:flex;align-items:center;gap:5px;flex:1;">
+                    <input type="number" id="areaFillMax" value="4" min="1" max="9999"
+                        style="width:64px;padding:4px 8px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Mono',monospace;color:var(--ink);">
+                    <span style="font-size:12px;color:var(--ink3);">マス以下を埋める</span>
+                </div>
+            </div>
             <div class="stats-row">
                 <div class="stat-card">
                     <div class="stat-label">総ステップ数</div>
@@ -543,6 +586,11 @@
                     <option value="8dir">8方向（斜め含む）</option>
                     <option value="random">完全ランダム</option>
                     <option value="biased">バイアス付き</option>
+                    <option value="spiral">螺旋バイアス</option>
+                    <option value="inertia">慣性ウォーク</option>
+                    <option value="leap">跳躍ウォーク</option>
+                    <option value="alternating">往復バイアス</option>
+                    <option value="attract">引力ウォーク</option>
                 </select>
             </div>
 
@@ -550,8 +598,13 @@
                 <div class="field-label">カラーモード</div>
                 <select id="colorMode">
                     <option value="single">単色</option>
-                    <option value="gradient">グラデーション</option>
+                    <option value="gradient">グラデーション（ステップ順）</option>
                     <option value="rainbow">レインボー</option>
+                    <option value="position">位置グラデーション</option>
+                    <option value="perwalker">ウォーカー別色</option>
+                    <option value="random_pick">ランダム（毎ステップ）</option>
+                    <option value="heatmap">密度ヒートマップ</option>
+                    <option value="alternate">交互</option>
                 </select>
             </div>
 
@@ -574,12 +627,32 @@
                     <option value="neon">ネオン</option>
                     <option value="candy">キャンディ</option>
                     <option value="cyberpunk">サイバーパンク</option>
+                    <option value="sakura">桜</option>
+                    <option value="midnight">夜空</option>
+                    <option value="washi">和紙</option>
+                    <option value="desert">砂漠</option>
+                    <option value="abyss">深海</option>
+                    <option value="fluorescent">蛍光ポップ</option>
+                    <option value="custom">🎨 カスタム</option>
                 </select>
             </div>
 
             <div class="field">
                 <div class="field-label">使用する色</div>
                 <div class="color-palette" id="colorPicker"></div>
+            </div>
+
+            <!-- カスタムパレット用UI -->
+            <div id="customPaletteEditor" style="display:none;">
+                <div class="field">
+                    <div class="field-label">色を追加</div>
+                    <div class="custom-color-add-row">
+                        <input type="color" id="customColorInput" value="#FF6B6B">
+                        <button class="btn btn-outline" style="flex:1" onclick="addCustomColor()">＋ 追加</button>
+                        <button class="btn btn-outline" style="flex:none;padding:9px 10px;" onclick="clearCustomColors()" title="全削除">✕</button>
+                    </div>
+                    <div id="customColorChips" class="color-palette" style="margin-top:6px;min-height:32px;"></div>
+                </div>
             </div>
 
             <div class="divider"></div>
@@ -661,8 +734,18 @@
         autumn:     ['#8B0000','#FF4500','#FFA500','#DAA520','#B8860B','#FFFFFF','transparent'],
         ice:        ['#E0F2F7','#B3E5FC','#81D4FA','#4FC3F7','#29B6F6','#FFFFFF','transparent'],
         lava:       ['#1A0000','#4D0000','#800000','#B30000','#FF0000','#FFFFFF','transparent'],
-        rainbow:    ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#4B0082','#8B00FF','#FFFFFF','transparent']
+        rainbow:    ['#FF0000','#FF7F00','#FFFF00','#00FF00','#0000FF','#4B0082','#8B00FF','#FFFFFF','transparent'],
+        sakura:     ['#FFB7C5','#FF8FAB','#FFCCD5','#FFF0F3','#E8A0BF','#C9184A','#FFFFFF','transparent'],
+        midnight:   ['#0D0221','#16002E','#3A0068','#7B2FBE','#C77DFF','#E040FB','#FFE57F','#FFFFFF','transparent'],
+        washi:      ['#F5F0E8','#D4C5A9','#B8A88A','#9E8E6E','#6B5B45','#3E2C1E','#FFFFFF','transparent'],
+        desert:     ['#C19A6B','#E2B97E','#F5CBA7','#8B6914','#D4A574','#7B4F00','#FFFFFF','transparent'],
+        abyss:      ['#000814','#001D3D','#003566','#006994','#0077B6','#00B4D8','#FFFFFF','transparent'],
+        fluorescent:['#ADFF02','#FF6BFF','#00FFEF','#FF3F00','#FFE500','#FFFFFF','transparent'],
+        custom:     []
     };
+
+    // カスタムパレット管理
+    let customColors = [];
 
     // ===== UNDO / REDO =====
     const FILL_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 11H5m14 0a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2m14 0V9a2 2 0 0 0-2-2M5 11V9a2 2 0 0 1 2-2m0 0V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M7 7h10"/></svg>`;
@@ -774,6 +857,19 @@
         });
     });
 
+    document.getElementById('areaFillEnabled').addEventListener('change', () => {
+        if (fillActive) {
+            currentPixelData = fillBackupData.map(row => [...row]);
+            applyFillEnclosed();
+        }
+    });
+    document.getElementById('areaFillMax').addEventListener('input', () => {
+        if (fillActive && document.getElementById('areaFillEnabled').checked) {
+            currentPixelData = fillBackupData.map(row => [...row]);
+            applyFillEnclosed();
+        }
+    });
+
     function updateDrawColorDisplay() {
         const disp = document.getElementById('currentColorDisplay');
         if (currentDrawColor === 'transparent') {
@@ -789,7 +885,16 @@
     // ===== COLOR PICKER =====
     function updateColorPicker() {
         const palette = document.getElementById('palette').value;
-        const colors = palettes[palette];
+        const customEditor = document.getElementById('customPaletteEditor');
+
+        if (palette === 'custom') {
+            customEditor.style.display = 'block';
+            palettes.custom = [...customColors, 'transparent'];
+        } else {
+            customEditor.style.display = 'none';
+        }
+
+        const colors = palettes[palette] || [];
         const colorPicker = document.getElementById('colorPicker');
         colorPicker.innerHTML = '';
         selectedColors = [];
@@ -798,6 +903,7 @@
             const isSpecial = (color === '#FFFFFF' || color === 'transparent');
             const chip = document.createElement('div');
             chip.className = isSpecial ? 'color-chip' : 'color-chip selected';
+            chip.style.position = 'relative';
 
             if (color === 'transparent') {
                 chip.style.background = 'linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%)';
@@ -821,6 +927,48 @@
                 }
             });
             colorPicker.appendChild(chip);
+        });
+    }
+
+    // ===== CUSTOM PALETTE =====
+    function addCustomColor() {
+        const val = document.getElementById('customColorInput').value;
+        if (!val) return;
+        if (customColors.includes(val)) return;
+        customColors.push(val);
+        palettes.custom = [...customColors, 'transparent'];
+        renderCustomChips();
+        updateColorPicker();
+    }
+
+    function clearCustomColors() {
+        customColors = [];
+        palettes.custom = ['transparent'];
+        renderCustomChips();
+        updateColorPicker();
+    }
+
+    function removeCustomColor(color) {
+        customColors = customColors.filter(c => c !== color);
+        palettes.custom = [...customColors, 'transparent'];
+        renderCustomChips();
+        updateColorPicker();
+    }
+
+    function renderCustomChips() {
+        const container = document.getElementById('customColorChips');
+        container.innerHTML = '';
+        customColors.forEach(color => {
+            const chip = document.createElement('div');
+            chip.className = 'color-chip';
+            chip.style.backgroundColor = color;
+            chip.style.position = 'relative';
+            const removeBtn = document.createElement('div');
+            removeBtn.className = 'color-chip-remove';
+            removeBtn.textContent = '×';
+            removeBtn.addEventListener('click', (e) => { e.stopPropagation(); removeCustomColor(color); });
+            chip.appendChild(removeBtn);
+            container.appendChild(chip);
         });
     }
 
@@ -867,37 +1015,87 @@
         const connectPath = document.getElementById('connectPath').checked;
         const colors = selectedColors;
 
+        // ヒートマップ用カウンタ
+        let heatmap = null;
+        if (colorMode === 'heatmap') {
+            heatmap = Array(gridSize).fill(null).map(() => Array(gridSize).fill(0));
+        }
+
+        // ウォーカーの状態（慣性など）
+        const walkerStates = Array.from({length: numWalkers}, () => ({}));
+        // ウォーカーの現在位置（引力用）
+        const walkerPos = [];
+
+        // 初期位置
         for (let w = 0; w < numWalkers; w++) {
-            let x = Math.floor(gridSize / 2) + (w - Math.floor(numWalkers / 2)) * 2;
-            let y = Math.floor(gridSize / 2);
-            for (let i = 0; i < steps; i++) {
+            const sx = Math.floor(gridSize / 2) + (w - Math.floor(numWalkers / 2)) * 2;
+            const sy = Math.floor(gridSize / 2);
+            walkerPos.push([Math.max(0, Math.min(gridSize-1, sx)), sy]);
+        }
+
+        for (let i = 0; i < steps; i++) {
+            for (let w = 0; w < numWalkers; w++) {
+                let [x, y] = walkerPos[w];
                 if (x >= 0 && x < gridSize && y >= 0 && y < gridSize) {
-                    if (!avoidOverlap || currentPixelData[y][x] === null) {
-                        currentPixelData[y][x] = getColor(colorMode, colors, i, steps, x, y);
+                    if (colorMode === 'heatmap') {
+                        heatmap[y][x]++;
+                    } else {
+                        const c = getColor(colorMode, colors, i, steps, x, y, w, numWalkers, null);
+                        if (!avoidOverlap || currentPixelData[y][x] === null) {
+                            currentPixelData[y][x] = c;
+                        }
                     }
                 }
-                const [newX, newY] = getNextPosition(x, y, movePattern);
+                const [newX, newY] = getNextPosition(x, y, movePattern, walkerStates[w], w, walkerPos);
                 if (connectPath) {
                     const pathSteps = Math.max(Math.abs(newX - x), Math.abs(newY - y));
                     for (let s = 1; s <= pathSteps; s++) {
                         const interpX = Math.floor(x + (newX - x) * s / pathSteps);
                         const interpY = Math.floor(y + (newY - y) * s / pathSteps);
                         if (interpX >= 0 && interpX < gridSize && interpY >= 0 && interpY < gridSize) {
-                            if (!avoidOverlap || currentPixelData[interpY][interpX] === null) {
-                                currentPixelData[interpY][interpX] = getColor(colorMode, colors, i, steps, interpX, interpY);
+                            if (colorMode === 'heatmap') {
+                                heatmap[interpY][interpX]++;
+                            } else {
+                                const c2 = getColor(colorMode, colors, i, steps, interpX, interpY, w, numWalkers, null);
+                                if (!avoidOverlap || currentPixelData[interpY][interpX] === null) {
+                                    currentPixelData[interpY][interpX] = c2;
+                                }
                             }
                         }
                     }
                 }
-                x = newX; y = newY;
+                walkerPos[w] = [newX, newY];
             }
         }
+
+        // ヒートマップ後処理
+        if (colorMode === 'heatmap' && heatmap) {
+            let maxVal = 0;
+            for (let y = 0; y < gridSize; y++)
+                for (let x = 0; x < gridSize; x++)
+                    if (heatmap[y][x] > maxVal) maxVal = heatmap[y][x];
+            if (maxVal > 0) {
+                for (let y = 0; y < gridSize; y++) {
+                    for (let x = 0; x < gridSize; x++) {
+                        if (heatmap[y][x] > 0) {
+                            const t = heatmap[y][x] / maxVal;
+                            // 低→高: 暗青→青→シアン→緑→黄→赤
+                            const hue = (1 - t) * 240;
+                            const light = 25 + t * 50;
+                            currentPixelData[y][x] = `hsl(${hue},90%,${light}%)`;
+                        }
+                    }
+                }
+            }
+        }
+
         updateStats();
         drawPixels();
     }
 
-    function getNextPosition(x, y, pattern) {
+    function getNextPosition(x, y, pattern, walkerState, walkerIdx, allWalkerPos) {
         let newX = x, newY = y;
+        const center = Math.floor(gridSize / 2);
         switch(pattern) {
             case '4dir': {
                 const d = Math.floor(Math.random() * 4);
@@ -919,14 +1117,107 @@
                 if (r<0.3) newY++; else if (r<0.5) newX++; else if (r<0.7) newY--; else newX--;
                 break;
             }
+            case 'spiral': {
+                // 中心から外に向かう角度方向にバイアス
+                const dx = x - center, dy = y - center;
+                const dist = Math.sqrt(dx*dx + dy*dy) || 0.01;
+                // 接線方向（螺旋）+ ランダム
+                const tangX = -dy / dist;
+                const tangY = dx / dist;
+                // ランダム性を混ぜて整数移動
+                const r2 = Math.random();
+                if (r2 < 0.5) {
+                    newX += Math.sign(tangX + (Math.random()-0.5)*0.8);
+                    newY += Math.sign(tangY + (Math.random()-0.5)*0.8);
+                } else {
+                    // 外向き
+                    newX += Math.sign(dx + (Math.random()-0.5)*2);
+                    newY += Math.sign(dy + (Math.random()-0.5)*2);
+                }
+                break;
+            }
+            case 'inertia': {
+                // 前の方向を引き継ぐ慣性
+                let vx = walkerState.vx || 0;
+                let vy = walkerState.vy || 0;
+                if (Math.random() < 0.25 || (vx === 0 && vy === 0)) {
+                    // 方向転換
+                    const dirs = [[-1,0],[1,0],[0,-1],[0,1]];
+                    const d = dirs[Math.floor(Math.random() * 4)];
+                    vx = d[0]; vy = d[1];
+                }
+                walkerState.vx = vx; walkerState.vy = vy;
+                newX += vx; newY += vy;
+                break;
+            }
+            case 'leap': {
+                const r3 = Math.random();
+                const dist2 = r3 < 0.85 ? 1 : Math.floor(Math.random() * 4) + 3;
+                const dirs2 = [[-1,0],[1,0],[0,-1],[0,1]];
+                const d2 = dirs2[Math.floor(Math.random() * 4)];
+                newX += d2[0] * dist2; newY += d2[1] * dist2;
+                break;
+            }
+            case 'alternating': {
+                // ステップ数で縦横を交互に
+                if (!walkerState.altStep) walkerState.altStep = 0;
+                walkerState.altStep++;
+                if (walkerState.altStep % 2 === 0) {
+                    newX += Math.random() < 0.5 ? -1 : 1;
+                } else {
+                    newY += Math.random() < 0.5 ? -1 : 1;
+                }
+                break;
+            }
+            case 'attract': {
+                // 他ウォーカーの重心に引き寄せられる（複数ウォーカー向け）
+                if (allWalkerPos && allWalkerPos.length > 1) {
+                    let avgX = 0, avgY = 0, count = 0;
+                    allWalkerPos.forEach((p, i) => {
+                        if (i !== walkerIdx) { avgX += p[0]; avgY += p[1]; count++; }
+                    });
+                    if (count > 0) {
+                        avgX /= count; avgY /= count;
+                        const adx = avgX - x, ady = avgY - y;
+                        if (Math.random() < 0.4) {
+                            newX += Math.sign(adx) || (Math.random()<0.5?-1:1);
+                            newY += Math.sign(ady) || (Math.random()<0.5?-1:1);
+                        } else {
+                            const d = Math.floor(Math.random() * 4);
+                            if (d===0) newY--; else if (d===1) newY++; else if (d===2) newX--; else newX++;
+                        }
+                    } else {
+                        const d = Math.floor(Math.random() * 4);
+                        if (d===0) newY--; else if (d===1) newY++; else if (d===2) newX--; else newX++;
+                    }
+                } else {
+                    // ウォーカーが1人なら中心引力
+                    const adx = center - x, ady = center - y;
+                    if (Math.random() < 0.3) {
+                        newX += Math.sign(adx) || 0;
+                        newY += Math.sign(ady) || 0;
+                    } else {
+                        const d = Math.floor(Math.random() * 4);
+                        if (d===0) newY--; else if (d===1) newY++; else if (d===2) newX--; else newX++;
+                    }
+                }
+                break;
+            }
         }
         newX = Math.max(0, Math.min(gridSize - 1, newX));
         newY = Math.max(0, Math.min(gridSize - 1, newY));
         return [newX, newY];
     }
 
-    function getColor(mode, colors, step, totalSteps, x, y) {
+    function getColor(mode, colors, step, totalSteps, x, y, walkerIdx, numWalkers, heatmap) {
         if (!colors || colors.length === 0) return '#000000';
+        // ヒートマップ用の色はheatmap引数から
+        if (mode === 'heatmap') {
+            if (!heatmap) return colors[0];
+            const val = heatmap[y][x] || 0;
+            // valは訪問回数。0→透明（呼ばれないはず）、多いほど明るい/濃い
+            return null; // heatmapは描画時に別途処理
+        }
         switch(mode) {
             case 'single': return colors[0];
             case 'gradient': {
@@ -935,6 +1226,24 @@
                 return colors[Math.min(idx, colors.length - 1)];
             }
             case 'rainbow': return `hsl(${(step / totalSteps) * 360}, 70%, 60%)`;
+            case 'position': {
+                // XY座標でグラデーション
+                if (colors.length === 1) return colors[0];
+                const t = (x + y) / (gridSize * 2);
+                const idx2 = Math.floor(t * colors.length);
+                return colors[Math.min(idx2, colors.length - 1)];
+            }
+            case 'perwalker': {
+                // ウォーカーごとに色を割り当て
+                if (colors.length === 0) return '#000000';
+                return colors[walkerIdx % colors.length];
+            }
+            case 'random_pick': {
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            case 'alternate': {
+                return colors[step % colors.length];
+            }
             default: return colors[0];
         }
     }
@@ -967,21 +1276,6 @@
         }
     }
 
-    // ===== 囲まれた空白を塗る =====
-    // 3方位（コの字型）バグ修正:
-    // BFSでは「外部から到達できる空白」を求める。
-    // 3方位モードの意図は「上・左・右の3方向が塗られていたら囲まれている」こと。
-    // つまり外部からの伝播は「下方向からしか逃げられない」ようにする必要はない。
-    // 正しい解釈：任意の方向でBFSを行い、境界の縁セルへのアクセス経路として
-    // 「下（南）から外部に抜けられる」ルートを塞ぐ = 境界初期化を上縁・左縁・右縁のみとし、
-    // BFS伝播は全4方向で行う。これにより「上・左・右から囲まれ、下が開いている」場合は塗られない。
-    // 【正しい仕様】「コの字型（上・左・右を壁で囲まれた形）の内側を塗る」
-    // = 下の縁から逃げられないセルを塗る
-    // つまり：BFSの開始点を「下縁の空白セル + 左縁と右縁の空白セル」のみにし、
-    // 伝播は4方向全部で行えばよい。
-    //
-    // まとめ: 4方位 → 全4縁を開始点。3方位（コの字）→ 下縁のみを開始点、伝播は4方向。
-
     function toggleFillEnclosed() {
         const btn = document.getElementById('fillBtn');
         if (!fillActive) {
@@ -1005,59 +1299,96 @@
     function applyFillEnclosed() {
         const dirCount = parseInt(document.querySelector('input[name="fillDir"]:checked').value);
         const dirs4 = [[0,-1],[0,1],[-1,0],[1,0]];
+        const areaFillEnabled = document.getElementById('areaFillEnabled').checked;
+        const areaFillMax = areaFillEnabled ? parseInt(document.getElementById('areaFillMax').value) || 4 : Infinity;
 
-        if (dirCount === 4) {
-            // 4方位モード：全縁の空白からBFSで「外部到達可能」を求め、残りを塗る
-            const visited = Array(gridSize).fill(null).map(() => Array(gridSize).fill(false));
-            const queue = [];
+        // まず空白領域をBFS分類（外部到達可能かどうか）
+        // 4方位モードと面積フィルで共通して「空白島」をラベリング
+        const label = Array(gridSize).fill(null).map(() => Array(gridSize).fill(-1)); // -1=塗済, >=0=island id
+        const islands = []; // islands[id] = {cells:[[x,y],...], touchesEdge:bool}
+
+        for (let y = 0; y < gridSize; y++) {
             for (let x = 0; x < gridSize; x++) {
-                if (currentPixelData[0][x] === null && !visited[0][x]) { visited[0][x]=true; queue.push([x,0]); }
-                if (currentPixelData[gridSize-1][x] === null && !visited[gridSize-1][x]) { visited[gridSize-1][x]=true; queue.push([x,gridSize-1]); }
+                if (currentPixelData[y][x] !== null) { label[y][x] = -1; continue; }
+                if (label[y][x] !== -2 && label[y][x] === -1) {
+                    // 未ラベル空白 → BFSで島を発見
+                    label[y][x] = -2; // 仮マーク
+                }
             }
-            for (let y = 1; y < gridSize-1; y++) {
-                if (currentPixelData[y][0] === null && !visited[y][0]) { visited[y][0]=true; queue.push([0,y]); }
-                if (currentPixelData[y][gridSize-1] === null && !visited[y][gridSize-1]) { visited[y][gridSize-1]=true; queue.push([gridSize-1,y]); }
-            }
-            let qi = 0;
-            while (qi < queue.length) {
-                const [cx, cy] = queue[qi++];
-                for (const [dx, dy] of dirs4) {
-                    const nx = cx + dx, ny = cy + dy;
-                    if (nx >= 0 && nx < gridSize && ny >= 0 && ny < gridSize
-                        && !visited[ny][nx] && currentPixelData[ny][nx] === null) {
-                        visited[ny][nx] = true;
+        }
+
+        // 全空白セルをBFSで島ごとにグループ化
+        let islandId = 0;
+        for (let sy = 0; sy < gridSize; sy++) {
+            for (let sx = 0; sx < gridSize; sx++) {
+                if (currentPixelData[sy][sx] !== null) continue;
+                if (label[sy][sx] >= 0) continue; // 既にラベル済
+                // BFS
+                const id = islandId++;
+                const queue = [[sx, sy]];
+                label[sy][sx] = id;
+                const cells = [[sx, sy]];
+                let touchesEdge = (sx === 0 || sx === gridSize-1 || sy === 0 || sy === gridSize-1);
+                let qi = 0;
+                while (qi < queue.length) {
+                    const [cx, cy] = queue[qi++];
+                    for (const [dx, dy] of dirs4) {
+                        const nx = cx+dx, ny = cy+dy;
+                        if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) continue;
+                        if (currentPixelData[ny][nx] !== null) continue;
+                        if (label[ny][nx] >= 0) continue;
+                        label[ny][nx] = id;
+                        cells.push([nx, ny]);
+                        if (nx === 0 || nx === gridSize-1 || ny === 0 || ny === gridSize-1) touchesEdge = true;
                         queue.push([nx, ny]);
                     }
                 }
+                islands.push({cells, touchesEdge, size: cells.length});
             }
-            for (let y = 0; y < gridSize; y++)
-                for (let x = 0; x < gridSize; x++)
-                    if (!visited[y][x] && currentPixelData[y][x] === null) {
-                        const c = getAdjacentColor(x, y);
-                        if (c) currentPixelData[y][x] = c;
-                    }
+        }
+
+        if (dirCount === 4) {
+            // 4方位モード：外部に接しない島を塗る（面積フィルがあればsize≤areaFillMaxも条件）
+            for (const island of islands) {
+                if (island.touchesEdge) continue;
+                if (areaFillEnabled && island.size > areaFillMax) continue;
+                for (const [cx, cy] of island.cells) {
+                    const c = getAdjacentColor(cx, cy);
+                    if (c) currentPixelData[cy][cx] = c;
+                }
+            }
         } else {
-            // 3方位モード：上下左右の隣接4セルのうち3つ以上が塗られていたら塗る
-            // 変化がなくなるまで繰り返す（連鎖的に埋まるケースに対応）
-            let changed = true;
-            while (changed) {
-                changed = false;
-                for (let y = 0; y < gridSize; y++) {
-                    for (let x = 0; x < gridSize; x++) {
-                        if (currentPixelData[y][x] !== null) continue;
-                        let filledNeighbors = 0;
-                        for (const [dx, dy] of dirs4) {
-                            const nx = x + dx, ny = y + dy;
-                            // グリッド外は「壁あり」として数える
-                            if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) {
-                                filledNeighbors++;
-                            } else if (currentPixelData[ny][nx] !== null) {
-                                filledNeighbors++;
+            // 3方位モード（面積フィルあり時は面積条件で絞り込み）
+            if (areaFillEnabled) {
+                // 面積が areaFillMax 以下の島を塗る（エッジに接するものも含めて面積が小さければ塗る）
+                for (const island of islands) {
+                    if (island.size > areaFillMax) continue;
+                    for (const [cx, cy] of island.cells) {
+                        const c = getAdjacentColor(cx, cy);
+                        if (c) currentPixelData[cy][cx] = c;
+                    }
+                }
+            } else {
+                // 元の3方位ロジック（3辺以上囲まれたら塗る）
+                let changed = true;
+                while (changed) {
+                    changed = false;
+                    for (let y = 0; y < gridSize; y++) {
+                        for (let x = 0; x < gridSize; x++) {
+                            if (currentPixelData[y][x] !== null) continue;
+                            let filledNeighbors = 0;
+                            for (const [dx, dy] of dirs4) {
+                                const nx = x + dx, ny = y + dy;
+                                if (nx < 0 || nx >= gridSize || ny < 0 || ny >= gridSize) {
+                                    filledNeighbors++;
+                                } else if (currentPixelData[ny][nx] !== null) {
+                                    filledNeighbors++;
+                                }
                             }
-                        }
-                        if (filledNeighbors >= 3) {
-                            const c = getAdjacentColor(x, y);
-                            if (c) { currentPixelData[y][x] = c; changed = true; }
+                            if (filledNeighbors >= 3) {
+                                const c = getAdjacentColor(x, y);
+                                if (c) { currentPixelData[y][x] = c; changed = true; }
+                            }
                         }
                     }
                 }
