@@ -514,23 +514,25 @@
                     囲まれた空白を塗る
                 </button>
             </div>
-            <div class="fill-options">
-                <span class="fill-options-label">囲み判定：</span>
-                <div class="fill-dir-btns">
-                    <label><input type="radio" name="fillDir" value="4" checked>4方位</label>
-                    <label><input type="radio" name="fillDir" value="3">3方位</label>
+            <!-- 囲み判定 & 面積フィル 横並び -->
+            <div style="display:flex;gap:8px;align-items:stretch;">
+                <div class="fill-options" style="flex:1;min-width:0;">
+                    <span class="fill-options-label">囲み判定：</span>
+                    <div class="fill-dir-btns">
+                        <label><input type="radio" name="fillDir" value="4" checked>4方位</label>
+                        <label><input type="radio" name="fillDir" value="3">3方位</label>
+                    </div>
                 </div>
-            </div>
-            <div class="fill-options" style="gap:10px;flex-wrap:wrap;">
-                <span class="fill-options-label" style="white-space:nowrap;">面積フィル：</span>
-                <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--ink2);">
-                    <input type="checkbox" id="areaFillEnabled" style="accent-color:var(--ink);cursor:pointer;width:14px;height:14px;">
-                    有効
-                </label>
-                <div style="display:flex;align-items:center;gap:5px;flex:1;">
-                    <input type="number" id="areaFillMax" value="4" min="1" max="9999"
-                        style="width:64px;padding:4px 8px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Mono',monospace;color:var(--ink);">
-                    <span style="font-size:12px;color:var(--ink3);">マス以下を埋める</span>
+                <div class="fill-options" style="flex:1;min-width:0;gap:6px;flex-wrap:nowrap;">
+                    <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--ink2);white-space:nowrap;cursor:pointer;">
+                        <input type="checkbox" id="areaFillEnabled" style="accent-color:var(--ink);cursor:pointer;width:14px;height:14px;">
+                        <span class="fill-options-label" style="white-space:nowrap;">面積フィル</span>
+                    </label>
+                    <div style="display:flex;align-items:center;gap:4px;flex:1;min-width:0;">
+                        <input type="number" id="areaFillMax" value="4" min="1" max="9999"
+                            style="width:52px;padding:4px 6px;border:1px solid var(--border2);border-radius:var(--radius-sm);font-size:12px;font-family:'DM Mono',monospace;color:var(--ink);flex-shrink:0;">
+                        <span style="font-size:11px;color:var(--ink3);white-space:nowrap;">マス以下</span>
+                    </div>
                 </div>
             </div>
             <div class="stats-row">
@@ -586,7 +588,6 @@
                     <option value="8dir">8方向（斜め含む）</option>
                     <option value="random">完全ランダム</option>
                     <option value="biased">バイアス付き</option>
-                    <option value="spiral">螺旋バイアス</option>
                     <option value="inertia">慣性ウォーク</option>
                     <option value="leap">跳躍ウォーク</option>
                     <option value="alternating">往復バイアス</option>
@@ -596,19 +597,22 @@
 
             <div class="field">
                 <div class="field-label">カラーモード</div>
-                <select id="colorMode">
+                <select id="colorMode" onchange="onColorModeChange()">
                     <option value="single">単色</option>
                     <option value="gradient">グラデーション（ステップ順）</option>
                     <option value="rainbow">レインボー</option>
-                    <option value="position">位置グラデーション</option>
                     <option value="perwalker">ウォーカー別色</option>
-                    <option value="random_pick">ランダム（毎ステップ）</option>
                     <option value="heatmap">密度ヒートマップ</option>
-                    <option value="alternate">交互</option>
                 </select>
             </div>
 
-            <div class="field">
+            <!-- ヒートマップカスタムカラーエディタ -->
+            <div id="heatmapColorEditor" style="display:none;">
+                <div class="field-label" style="margin-bottom:8px;">ヒートマップ カラー（低 → 高）</div>
+                <div id="heatmapColorStops" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;"></div>
+            </div>
+
+            <div class="field" id="paletteField">
                 <div class="field-label">カラーパレット</div>
                 <select id="palette">
                     <option value="monochrome">モノクロ</option>
@@ -637,7 +641,7 @@
                 </select>
             </div>
 
-            <div class="field">
+            <div class="field" id="colorPickerField">
                 <div class="field-label">使用する色</div>
                 <div class="color-palette" id="colorPicker"></div>
             </div>
@@ -746,6 +750,60 @@
 
     // カスタムパレット管理
     let customColors = [];
+
+    // ヒートマップカスタムカラー（5色、低→高）
+    let heatmapCustomColors = ['#000050','#0000ff','#00ffff','#00ff00','#ffff00','#ff0000'];
+
+    function onColorModeChange() {
+        const mode = document.getElementById('colorMode').value;
+        const editor = document.getElementById('heatmapColorEditor');
+        const paletteField = document.getElementById('paletteField');
+        const colorPickerField = document.getElementById('colorPickerField');
+        if (mode === 'heatmap') {
+            editor.style.display = 'block';
+            if (paletteField) paletteField.style.display = 'none';
+            if (colorPickerField) colorPickerField.style.display = 'none';
+        } else {
+            editor.style.display = 'none';
+            if (paletteField) paletteField.style.display = 'block';
+            if (colorPickerField) colorPickerField.style.display = 'block';
+        }
+        renderHeatmapColorStops();
+    }
+
+    function renderHeatmapColorStops() {
+        const container = document.getElementById('heatmapColorStops');
+        if (!container) return;
+        container.innerHTML = '';
+        heatmapCustomColors.forEach((color, idx) => {
+            const wrap = document.createElement('div');
+            wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;';
+            const label = document.createElement('span');
+            label.style.cssText = 'font-size:10px;color:var(--ink3);font-family:"DM Mono",monospace;';
+            label.textContent = idx === 0 ? '低' : idx === heatmapCustomColors.length - 1 ? '高' : `${idx+1}`;
+            const inp = document.createElement('input');
+            inp.type = 'color';
+            inp.value = color;
+            inp.style.cssText = 'width:36px;height:36px;border:2px solid var(--border2);border-radius:6px;cursor:pointer;padding:2px;background:white;';
+            inp.addEventListener('input', (e) => {
+                heatmapCustomColors[idx] = e.target.value;
+            });
+            wrap.appendChild(label);
+            wrap.appendChild(inp);
+            // 矢印（最後以外）
+            if (idx < heatmapCustomColors.length - 1) {
+                const arr = document.createElement('span');
+                // spacer after
+                container.appendChild(wrap);
+                const arrowWrap = document.createElement('div');
+                arrowWrap.style.cssText = 'display:flex;align-items:center;padding-top:16px;';
+                arrowWrap.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--ink3)" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+                container.appendChild(arrowWrap);
+                return;
+            }
+            container.appendChild(wrap);
+        });
+    }
 
     // ===== UNDO / REDO =====
     const FILL_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 11H5m14 0a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2m14 0V9a2 2 0 0 0-2-2M5 11V9a2 2 0 0 1 2-2m0 0V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v2M7 7h10"/></svg>`;
@@ -1079,10 +1137,37 @@
                     for (let x = 0; x < gridSize; x++) {
                         if (heatmap[y][x] > 0) {
                             const t = heatmap[y][x] / maxVal;
-                            // 低→高: 暗青→青→シアン→緑→黄→赤
-                            const hue = (1 - t) * 240;
-                            const light = 25 + t * 50;
-                            currentPixelData[y][x] = `hsl(${hue},90%,${light}%)`;
+                            // 🎨 カスタムヒートマップカラー
+let hmColors = heatmapCustomColors;
+
+// HEX → RGB
+function hexToRgb(hex) {
+    const v = hex.replace('#', '');
+    return [
+        parseInt(v.substring(0, 2), 16),
+        parseInt(v.substring(2, 4), 16),
+        parseInt(v.substring(4, 6), 16)
+    ];
+}
+
+// RGB配列に変換
+const rgbColors = hmColors.map(c => hexToRgb(c));
+
+const n = rgbColors.length - 1;
+
+// --- 各ピクセル ---
+const scaled = t * n;
+const i = Math.min(Math.floor(scaled), n - 1);
+const f = scaled - i;
+
+const c1 = rgbColors[i];
+const c2 = rgbColors[i + 1];
+
+const r = Math.round(c1[0] + (c2[0] - c1[0]) * f);
+const g = Math.round(c1[1] + (c2[1] - c1[1]) * f);
+const b = Math.round(c1[2] + (c2[2] - c1[2]) * f);
+
+currentPixelData[y][x] = `rgb(${r},${g},${b})`;
                         }
                     }
                 }
@@ -1115,25 +1200,6 @@
             case 'biased': {
                 const r = Math.random();
                 if (r<0.3) newY++; else if (r<0.5) newX++; else if (r<0.7) newY--; else newX--;
-                break;
-            }
-            case 'spiral': {
-                // 中心から外に向かう角度方向にバイアス
-                const dx = x - center, dy = y - center;
-                const dist = Math.sqrt(dx*dx + dy*dy) || 0.01;
-                // 接線方向（螺旋）+ ランダム
-                const tangX = -dy / dist;
-                const tangY = dx / dist;
-                // ランダム性を混ぜて整数移動
-                const r2 = Math.random();
-                if (r2 < 0.5) {
-                    newX += Math.sign(tangX + (Math.random()-0.5)*0.8);
-                    newY += Math.sign(tangY + (Math.random()-0.5)*0.8);
-                } else {
-                    // 外向き
-                    newX += Math.sign(dx + (Math.random()-0.5)*2);
-                    newY += Math.sign(dy + (Math.random()-0.5)*2);
-                }
                 break;
             }
             case 'inertia': {
@@ -1226,23 +1292,10 @@
                 return colors[Math.min(idx, colors.length - 1)];
             }
             case 'rainbow': return `hsl(${(step / totalSteps) * 360}, 70%, 60%)`;
-            case 'position': {
-                // XY座標でグラデーション
-                if (colors.length === 1) return colors[0];
-                const t = (x + y) / (gridSize * 2);
-                const idx2 = Math.floor(t * colors.length);
-                return colors[Math.min(idx2, colors.length - 1)];
-            }
             case 'perwalker': {
                 // ウォーカーごとに色を割り当て
                 if (colors.length === 0) return '#000000';
                 return colors[walkerIdx % colors.length];
-            }
-            case 'random_pick': {
-                return colors[Math.floor(Math.random() * colors.length)];
-            }
-            case 'alternate': {
-                return colors[step % colors.length];
             }
             default: return colors[0];
         }
@@ -1460,6 +1513,7 @@
     // ===== INIT =====
     updateCanvasSize();
     updateColorPicker();
+    renderHeatmapColorStops();
 </script>
 </body>
 </html>
