@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>ランダムウォーク</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Mono:wght@400;500&family=Bebas+Neue&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -60,10 +60,10 @@
             margin-right: 20px;
         }
         .masthead-title h1 {
-            font-family: var(--serif);
-            font-size: 17px;
-            font-weight: 700;
-            letter-spacing: 0.02em;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 22px;
+            font-weight: 400;
+            letter-spacing: 0.12em;
             color: var(--paper);
         }
         .masthead-title span {
@@ -694,20 +694,20 @@
             <canvas id="canvas"></canvas>
         </div>
 
-        <!-- Action buttons -->
-        <div class="btn-row">
-            <button class="btn btn-primary" onclick="generateArt()">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
+        <!-- Action buttons: generate + save big, undo/redo small -->
+        <div class="btn-row" style="flex-wrap:nowrap;">
+            <button class="btn btn-primary" onclick="generateArt()" style="flex:1;padding:11px 0;font-size:12px;justify-content:center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>
                 生成
             </button>
-            <button class="btn btn-icon" id="undoBtn" onclick="undoAction()" disabled title="元に戻す">
+            <button class="btn btn-icon" id="undoBtn" onclick="undoAction()" disabled title="元に戻す" style="flex-shrink:0;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
             </button>
-            <button class="btn btn-icon" id="redoBtn" onclick="redoAction()" disabled title="やり直す">
+            <button class="btn btn-icon" id="redoBtn" onclick="redoAction()" disabled title="やり直す" style="flex-shrink:0;">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-7a4 4 0 0 1 4-4h12"/></svg>
             </button>
-            <button class="btn btn-outline" onclick="downloadImage()">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <button class="btn btn-outline" onclick="downloadImage()" style="flex:1;padding:11px 0;font-size:12px;justify-content:center;">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 保存
             </button>
         </div>
@@ -761,8 +761,8 @@
             <div class="sec">
                 <div class="sec-head">Walk</div>
                 <div class="field">
-                    <div class="field-label">グリッド <span class="field-val" id="sizeDisplay">32×32</span></div>
-                    <input type="range" id="gridSize" min="16" max="128" value="32" step="8">
+                    <div class="field-label">グリッド <span class="field-val" id="sizeDisplay">48×48</span></div>
+                    <input type="range" id="gridSize" min="16" max="128" value="48" step="8">
                 </div>
                 <div class="field">
                     <div class="field-label">ステップ数 <span class="field-val" id="stepsDisplay">500</span></div>
@@ -793,7 +793,7 @@
                     <div class="field-label">カラーモード</div>
                     <select id="colorMode" onchange="onColorModeChange()">
                         <option value="single">単色</option>
-                        <option value="gradient">グラデーション</option>
+                        <option value="gradient" selected>グラデーション</option>
                         <option value="rainbow">レインボー</option>
                         <option value="perwalker">ウォーカー別</option>
                         <option value="heatmap">密度ヒートマップ</option>
@@ -866,6 +866,20 @@
                     <label class="check-label"><input type="checkbox" id="showGrid">グリッド表示</label>
                     <label class="check-label"><input type="checkbox" id="connectPath" checked>パス接続</label>
                     <label class="check-label"><input type="checkbox" id="manualDraw">手動描画</label>
+                    <label class="check-label" title="左右対称に描画"><input type="checkbox" id="mirrorH">左右ミラー</label>
+                    <label class="check-label" title="上下対称に描画"><input type="checkbox" id="mirrorV">上下ミラー</label>
+                    <label class="check-label" title="孤立した1ピクセルを削除"><input type="checkbox" id="noiseReduce">ノイズ除去</label>
+                    <label class="check-label" title="塗りピクセルの輪郭だけ残す"><input type="checkbox" id="outlineOnly">輪郭のみ</label>
+                </div>
+                <!-- Pixel size multiplier -->
+                <div class="field" style="margin-top:10px;">
+                    <div class="field-label">ピクセルサイズ <span class="field-val" id="pixMulDisplay">×1</span></div>
+                    <input type="range" id="pixMul" min="1" max="4" value="1" step="1">
+                </div>
+                <!-- Opacity -->
+                <div class="field">
+                    <div class="field-label">不透明度 <span class="field-val" id="opacityDisplay">100%</span></div>
+                    <input type="range" id="opacity" min="10" max="100" value="100" step="5">
                 </div>
                 <div id="manualColorGroup" style="display:none;margin-top:8px;">
                     <div class="field-label" style="margin-bottom:5px;">描画色</div>
@@ -873,6 +887,11 @@
                         <div class="draw-swatch" id="currentColorDisplay"></div>
                         <span class="draw-hex" id="currentColorLabel">#000000</span>
                     </div>
+                </div>
+                <!-- Post-process buttons -->
+                <div style="display:flex;gap:5px;margin-top:10px;">
+                    <button class="btn btn-outline" style="flex:1;font-size:10px;padding:7px 0;" onclick="applyInvert()">色反転</button>
+                    <button class="btn btn-outline" style="flex:1;font-size:10px;padding:7px 0;" onclick="applyClear()">全消去</button>
                 </div>
             </div>
 
@@ -890,7 +909,7 @@
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
 
-    let gridSize=32, pixelScale=15;
+    let gridSize=48, pixelScale=15;
     let currentPixelData=[];
     let selectedColors=[];
     let manualDrawMode=false, currentDrawColor='#000000', isDrawing=false;
@@ -983,6 +1002,16 @@
     document.getElementById('walkers').addEventListener('input',e=>{document.getElementById('walkersDisplay').textContent=e.target.value;});
     document.getElementById('showGrid').addEventListener('change',()=>drawPixels());
     document.getElementById('palette').addEventListener('change',()=>updateColorPicker());
+    document.getElementById('pixMul').addEventListener('input',e=>{
+        document.getElementById('pixMulDisplay').textContent=`×${e.target.value}`;
+        drawPixels();
+    });
+    document.getElementById('opacity').addEventListener('input',e=>{
+        document.getElementById('opacityDisplay').textContent=`${e.target.value}%`;
+        drawPixels();
+    });
+    document.getElementById('noiseReduce').addEventListener('change',()=>{ if(document.getElementById('noiseReduce').checked) applyNoiseReduce(); });
+    document.getElementById('outlineOnly').addEventListener('change',()=>{ if(document.getElementById('outlineOnly').checked) applyOutlineOnly(); });
     document.getElementById('manualDraw').addEventListener('change',e=>{
         manualDrawMode=e.target.checked;
         const g=document.getElementById('manualColorGroup');
@@ -1045,13 +1074,11 @@
         const mob=window.innerWidth<=680;
         const maxPx=mob?Math.min(window.innerWidth-32,window.innerHeight*0.46):Math.min(window.innerWidth*0.6,560);
         pixelScale=Math.max(4,Math.floor(maxPx/gridSize));
-        canvas.width=gridSize*pixelScale;canvas.height=gridSize*pixelScale;
         generateArt();
     }
 
     function generateArt(){
         pushUndo();
-        if(fillActive){fillActive=false;fillBackupData=null;document.getElementById('fillBtn').classList.remove('active');document.getElementById('fillBtn').innerHTML=FILL_SVG+'囲まれた空白を塗る';}
         currentPixelData=Array(gridSize).fill(null).map(()=>Array(gridSize).fill(null));
         const steps=parseInt(document.getElementById('steps').value);
         const nw=parseInt(document.getElementById('walkers').value);
@@ -1059,20 +1086,29 @@
         const cmode=document.getElementById('colorMode').value;
         const avoidOv=document.getElementById('avoidOverlap').checked;
         const conn=document.getElementById('connectPath').checked;
+        const mirH=document.getElementById('mirrorH').checked;
+        const mirV=document.getElementById('mirrorV').checked;
         const cols=selectedColors;
         let hm=null;if(cmode==='heatmap')hm=Array(gridSize).fill(null).map(()=>Array(gridSize).fill(0));
         const wStates=Array.from({length:nw},()=>({}));
         const wPos=[];
         for(let w=0;w<nw;w++){const sx=Math.floor(gridSize/2)+(w-Math.floor(nw/2))*2;wPos.push([Math.max(0,Math.min(gridSize-1,sx)),Math.floor(gridSize/2)]);}
+        function setPixel(px,py,c){
+            if(px<0||px>=gridSize||py<0||py>=gridSize)return;
+            if(!avoidOv||currentPixelData[py][px]===null)currentPixelData[py][px]=c;
+            if(mirH){const mx=gridSize-1-px;if(mx>=0&&mx<gridSize&&(!avoidOv||currentPixelData[py][mx]===null))currentPixelData[py][mx]=c;}
+            if(mirV){const my=gridSize-1-py;if(my>=0&&my<gridSize&&(!avoidOv||currentPixelData[my][px]===null))currentPixelData[my][px]=c;}
+            if(mirH&&mirV){const mx=gridSize-1-px,my=gridSize-1-py;if(mx>=0&&mx<gridSize&&my>=0&&my<gridSize&&(!avoidOv||currentPixelData[my][mx]===null))currentPixelData[my][mx]=c;}
+        }
         for(let i=0;i<steps;i++){
             for(let w=0;w<nw;w++){
                 let[x,y]=wPos[w];
                 if(x>=0&&x<gridSize&&y>=0&&y<gridSize){
-                    if(cmode==='heatmap'){hm[y][x]++;}
-                    else{const c=getColor(cmode,cols,i,steps,w);if(!avoidOv||currentPixelData[y][x]===null)currentPixelData[y][x]=c;}
+                    if(cmode==='heatmap'){hm[y][x]++;if(mirH)hm[y][gridSize-1-x]=Math.max(hm[y][gridSize-1-x],hm[y][x]);if(mirV)hm[gridSize-1-y][x]=Math.max(hm[gridSize-1-y][x],hm[y][x]);}
+                    else{const c=getColor(cmode,cols,i,steps,w);setPixel(x,y,c);}
                 }
                 const[nx,ny]=getNext(x,y,pat,wStates[w],w,wPos);
-                if(conn){const ps=Math.max(Math.abs(nx-x),Math.abs(ny-y));for(let s=1;s<=ps;s++){const ix=Math.floor(x+(nx-x)*s/ps),iy=Math.floor(y+(ny-y)*s/ps);if(ix>=0&&ix<gridSize&&iy>=0&&iy<gridSize){if(cmode==='heatmap'){hm[iy][ix]++;}else{const c2=getColor(cmode,cols,i,steps,w);if(!avoidOv||currentPixelData[iy][ix]===null)currentPixelData[iy][ix]=c2;}}}}
+                if(conn){const ps=Math.max(Math.abs(nx-x),Math.abs(ny-y));for(let s=1;s<=ps;s++){const ix=Math.floor(x+(nx-x)*s/ps),iy=Math.floor(y+(ny-y)*s/ps);if(ix>=0&&ix<gridSize&&iy>=0&&iy<gridSize){if(cmode==='heatmap'){hm[iy][ix]++;if(mirH)hm[iy][gridSize-1-ix]=Math.max(hm[iy][gridSize-1-ix],hm[iy][ix]);if(mirV)hm[gridSize-1-iy][ix]=Math.max(hm[gridSize-1-iy][ix],hm[iy][ix]);}else{const c2=getColor(cmode,cols,i,steps,w);setPixel(ix,iy,c2);}}}}
                 wPos[w]=[nx,ny];
             }
         }
@@ -1087,6 +1123,14 @@
                     currentPixelData[y][x]=`rgb(${Math.round(a[0]+(b[0]-a[0])*f)},${Math.round(a[1]+(b[1]-a[1])*f)},${Math.round(a[2]+(b[2]-a[2])*f)})`;
                 }
             }
+        }
+        // Post-process options
+        if(document.getElementById('noiseReduce').checked) _applyNoiseReduce();
+        if(document.getElementById('outlineOnly').checked) _applyOutlineOnly();
+        // Re-apply fill if it was active
+        if(fillActive){
+            fillBackupData=currentPixelData.map(r=>[...r]);
+            applyFill();
         }
         updateStats();drawPixels();
     }
@@ -1122,10 +1166,64 @@
     }
 
     function drawPixels(){
+        const mul=parseInt(document.getElementById('pixMul').value)||1;
+        const op=(parseInt(document.getElementById('opacity').value)||100)/100;
+        const ps=pixelScale*mul;
+        canvas.width=gridSize*ps;canvas.height=gridSize*ps;
         ctx.clearRect(0,0,canvas.width,canvas.height);
         if(bgMode==='color'){ctx.fillStyle=document.getElementById('bgColorInput').value;ctx.fillRect(0,0,canvas.width,canvas.height);}
-        if(document.getElementById('showGrid').checked){ctx.strokeStyle='rgba(0,0,0,0.07)';ctx.lineWidth=0.5;for(let i=0;i<=gridSize;i++){ctx.beginPath();ctx.moveTo(i*pixelScale,0);ctx.lineTo(i*pixelScale,canvas.height);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*pixelScale);ctx.lineTo(canvas.width,i*pixelScale);ctx.stroke();}}
-        for(let y=0;y<gridSize;y++)for(let x=0;x<gridSize;x++){const c=currentPixelData[y][x];if(c!==null&&c!=='transparent'){ctx.fillStyle=c;ctx.fillRect(x*pixelScale,y*pixelScale,pixelScale,pixelScale);}}
+        if(document.getElementById('showGrid').checked){ctx.strokeStyle='rgba(0,0,0,0.07)';ctx.lineWidth=0.5;for(let i=0;i<=gridSize;i++){ctx.beginPath();ctx.moveTo(i*ps,0);ctx.lineTo(i*ps,canvas.height);ctx.stroke();ctx.beginPath();ctx.moveTo(0,i*ps);ctx.lineTo(canvas.width,i*ps);ctx.stroke();}}
+        ctx.globalAlpha=op;
+        for(let y=0;y<gridSize;y++)for(let x=0;x<gridSize;x++){const c=currentPixelData[y][x];if(c!==null&&c!=='transparent'){ctx.fillStyle=c;ctx.fillRect(x*ps,y*ps,ps,ps);}}
+        ctx.globalAlpha=1;
+    }
+
+    // New: noise reduce - remove isolated pixels (no neighbors)
+    function _applyNoiseReduce(){
+        const d4=[[0,-1],[0,1],[-1,0],[1,0]];
+        for(let y=0;y<gridSize;y++)for(let x=0;x<gridSize;x++){
+            if(currentPixelData[y][x]===null)continue;
+            let n=0;for(const[dx,dy]of d4){const nx=x+dx,ny=y+dy;if(nx>=0&&nx<gridSize&&ny>=0&&ny<gridSize&&currentPixelData[ny][nx]!==null)n++;}
+            if(n===0)currentPixelData[y][x]=null;
+        }
+    }
+    function applyNoiseReduce(){pushUndo();_applyNoiseReduce();drawPixels();updateStats();}
+
+    // New: outline only - keep only pixels that have at least one empty neighbor
+    function _applyOutlineOnly(){
+        const d4=[[0,-1],[0,1],[-1,0],[1,0]];
+        const next=currentPixelData.map(r=>[...r]);
+        for(let y=0;y<gridSize;y++)for(let x=0;x<gridSize;x++){
+            if(currentPixelData[y][x]===null)continue;
+            let hasEmpty=false;
+            for(const[dx,dy]of d4){const nx=x+dx,ny=y+dy;if(nx<0||nx>=gridSize||ny<0||ny>=gridSize||currentPixelData[ny][nx]===null){hasEmpty=true;break;}}
+            if(!hasEmpty)next[y][x]=null;
+        }
+        currentPixelData=next;
+    }
+    function applyOutlineOnly(){pushUndo();_applyOutlineOnly();drawPixels();updateStats();}
+
+    // New: invert colors
+    function applyInvert(){
+        pushUndo();
+        function invertHex(c){
+            if(!c||c==='transparent')return c;
+            let r,g,b;
+            if(c.startsWith('rgb(')){const m=c.match(/\d+/g);r=255-parseInt(m[0]);g=255-parseInt(m[1]);b=255-parseInt(m[2]);}
+            else{const v=c.replace('#','');r=255-parseInt(v.slice(0,2),16);g=255-parseInt(v.slice(2,4),16);b=255-parseInt(v.slice(4,6),16);}
+            return`rgb(${r},${g},${b})`;
+        }
+        for(let y=0;y<gridSize;y++)for(let x=0;x<gridSize;x++){if(currentPixelData[y][x]!==null)currentPixelData[y][x]=invertHex(currentPixelData[y][x]);}
+        if(fillActive){fillBackupData=currentPixelData.map(r=>[...r]);}
+        drawPixels();updateStats();
+    }
+
+    // New: clear canvas
+    function applyClear(){
+        pushUndo();
+        currentPixelData=Array(gridSize).fill(null).map(()=>Array(gridSize).fill(null));
+        if(fillActive){cancelFill();}
+        drawPixels();updateStats();
     }
 
     function toggleFillEnclosed(){
@@ -1183,9 +1281,11 @@
     canvas.addEventListener('touchend',()=>isDrawing=false);
 
     function doDraw(cx,cy,type){
+        const mul=parseInt(document.getElementById('pixMul').value)||1;
+        const ps=pixelScale*mul;
         const r=canvas.getBoundingClientRect();
-        const x=Math.floor((cx-r.left)*(canvas.width/r.width)/pixelScale);
-        const y=Math.floor((cy-r.top)*(canvas.height/r.height)/pixelScale);
+        const x=Math.floor((cx-r.left)*(canvas.width/r.width)/ps);
+        const y=Math.floor((cy-r.top)*(canvas.height/r.height)/ps);
         if(x<0||x>=gridSize||y<0||y>=gridSize)return;
         if(currentPixelData[y][x]===currentDrawColor)return;
         if(type==='md'||type==='td')pushUndo();
